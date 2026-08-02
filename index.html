@@ -1,1334 +1,501 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MusicPro - Gerencie seu repertório musical">
-    <meta name="theme-color" content="#0A84FF">
-    <title>MusicPro - Repertório Musical</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --unit: 8px;
-            --color-brand: #0A84FF;
-            --color-brand-light: #409CFF;
-            --color-text-primary: #000000;
-            --color-text-secondary: #8E8E93;
-            --color-text-tertiary: #AEAEB2;
-            --color-background: #FFFFFF;
-            --color-surface-secondary: #F2F2F7;
-            --color-border: #E5E5EA;
-            --color-success: #34C759;
-            --color-warning: #FF9500;
-            --color-danger: #FF3B30;
-            --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --font-family-mono: 'SF Mono', 'Menlo', 'Courier New', monospace;
-            --large-title: 34px;
-            --title-1: 28px;
-            --title-2: 22px;
-            --body: 17px;
-            --subhead: 15px;
-            --caption: 12px;
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: var(--font-family-sans);
-            background: linear-gradient(135deg, #E8E8ED 0%, #D1D1D6 100%);
-            color: var(--color-text-primary);
-            font-size: var(--body);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        @media (min-width: 768px) {
-            body {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 20px;
-            }
-        }
-
-        #app {
-            width: 100%;
-            height: 100vh;
-            background-color: var(--color-background);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        @media (min-width: 768px) {
-            #app {
-                max-width: 420px;
-                max-height: 900px;
-                height: 95vh;
-                border-radius: 48px;
-                box-shadow: 0 30px 90px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
-            }
-        }
-
-        @media (min-width: 1024px) {
-            #app {
-                max-width: 600px;
-                max-height: none;
-            }
-        }
-
-        @media (min-width: 1440px) {
-            #app {
-                max-width: 800px;
-            }
-        }
-
-        main {
-            flex-grow: 1;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-        }
-        
-        .view {
-            padding: 0 calc(var(--unit) * 2.5);
-            animation: fadeIn 0.5s ease forwards;
-        }
-
-        @media (min-width: 1024px) {
-            .view {
-                padding: 0 calc(var(--unit) * 4);
-            }
-        }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .main-header {
-            padding: var(--unit) 0 calc(var(--unit) * 2);
-            background-color: var(--color-background);
-            position: sticky;
-            top: 0;
-            z-index: 5;
-        }
-        
-        .main-header h2 {
-            font-size: var(--large-title);
-            font-weight: 700;
-            margin: 0 0 calc(var(--unit) * 2) 0;
-            padding-top: calc(var(--unit) * 2);
-            letter-spacing: -0.5px;
-        }
-
-        @media (min-width: 768px) {
-            .main-header h2 {
-                font-size: 38px;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .main-header h2 {
-                font-size: 42px;
-            }
-        }
-        
-        #search-input {
-            width: 100%;
-            padding: calc(var(--unit) * 1.75) calc(var(--unit) * 2);
-            border: none;
-            border-radius: calc(var(--unit) * 1.5);
-            font-size: var(--body);
-            background-color: var(--color-surface-secondary);
-            transition: all 0.2s ease;
-        }
-        
-        #search-input:focus {
-            outline: none;
-            background-color: #EEEEF3;
-            box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
-        }
-
-        .list-container {
-            border-top: 1px solid var(--color-border);
-        }
-
-        @media (min-width: 1024px) {
-            .list-container {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0;
-                border-top: none;
-            }
-
-            .list-container .song-card {
-                border-right: 1px solid var(--color-border);
-                border-top: 1px solid var(--color-border);
-                padding: calc(var(--unit) * 2.25) calc(var(--unit) * 2);
-            }
-
-            .list-container .song-card:nth-child(2n) {
-                border-right: none;
-            }
-        }
-
-        @media (min-width: 1440px) {
-            .list-container {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            .list-container .song-card:nth-child(2n) {
-                border-right: 1px solid var(--color-border);
-            }
-
-            .list-container .song-card:nth-child(3n) {
-                border-right: none;
-            }
-        }
-        
-        .song-card {
-            background: transparent;
-            padding: calc(var(--unit) * 2.25) 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            border-bottom: 1px solid var(--color-border);
-            transition: background-color 0.2s ease;
-        }
-        
-        .song-card:hover {
-            background-color: rgba(0, 0, 0, 0.02);
-        }
-        
-        .song-info { flex-grow: 1; }
-        
-        .song-info h3 { 
-            font-size: var(--body); 
-            font-weight: 600; 
-            margin: 0 0 4px 0;
-            letter-spacing: -0.2px;
-        }
-        
-        .song-info p { 
-            margin: 0; 
-            color: var(--color-text-secondary); 
-            font-size: var(--subhead);
-            font-weight: 500;
-        }
-
-        .status-button {
-            border: 1.5px solid var(--color-border);
-            background-color: transparent;
-            border-radius: 20px;
-            padding: calc(var(--unit) * 0.75) calc(var(--unit) * 1.75);
-            font-size: var(--caption);
-            font-weight: 600;
-            cursor: pointer;
-            min-width: 96px;
-            text-align: center;
-            color: var(--color-text-secondary);
-            transition: all 0.2s ease;
-        }
-        
-        .status-button:hover {
-            transform: scale(1.05);
-        }
-        
-        .status-nova { 
-            border-style: dashed;
-            border-color: var(--color-text-tertiary);
-            color: var(--color-text-tertiary);
-        }
-        
-        .status-estudando { 
-            color: var(--color-warning); 
-            border-color: var(--color-warning);
-            background-color: rgba(255, 149, 0, 0.08);
-        }
-        
-        .status-dominada { 
-            background: linear-gradient(135deg, var(--color-success) 0%, #30CC54 100%);
-            color: #FFFFFF; 
-            border-color: var(--color-success);
-            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
-        }
-
-        footer {
-            border-top: 1px solid rgba(0, 0, 0, 0.08);
-            display: flex;
-            justify-content: space-around;
-            align-items: stretch;
-            padding-top: calc(var(--unit) * 1.5);
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.95));
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            z-index: 10;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        @media (min-width: 768px) {
-            footer {
-                border-radius: 0 0 48px 48px;
-            }
-        }
-        
-        .nav-button {
-            background: none; 
-            border: none; 
-            color: var(--color-text-tertiary);
-            cursor: pointer; 
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            padding-bottom: calc(var(--unit) * 1.5);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .nav-button svg { 
-            stroke-width: 1.8px;
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .nav-button span { 
-            font-size: 10px; 
-            font-weight: 600;
-            letter-spacing: 0.2px;
-        }
-        
-        .nav-button.active { 
-            color: var(--color-brand);
-        }
-        
-        .nav-button.active svg {
-            transform: translateY(-2px);
-        }
-
-        #add-button {
-            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
-            color: white; 
-            border: none;
-            width: 56px; 
-            height: 56px;
-            border-radius: 50%;
-            font-size: 32px;
-            line-height: 56px;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(10, 132, 255, 0.35), 0 2px 8px rgba(10, 132, 255, 0.2);
-            position: fixed;
-            bottom: calc(var(--unit) * 10);
-            right: calc(var(--unit) * 3);
-            z-index: 11;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @media (min-width: 768px) {
-            #add-button {
-                position: absolute;
-                bottom: calc(var(--unit) * 10);
-                left: 50%;
-                right: auto;
-                transform: translateX(-50%);
-            }
-        }
-        
-        #add-button:hover {
-            box-shadow: 0 12px 32px rgba(10, 132, 255, 0.4), 0 4px 12px rgba(10, 132, 255, 0.25);
-        }
-
-        @media (min-width: 768px) {
-            #add-button:hover {
-                transform: translateX(-50%) translateY(-2px);
-            }
-        }
-        
-        #add-button.hidden {
-            transform: scale(0.5);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        @media (min-width: 768px) {
-            #add-button.hidden {
-                transform: translateX(-50%) scale(0.5);
-            }
-        }
-
-        button:active, .song-card:active {
-            transform: scale(0.97);
-        }
-
-        @media (hover: hover) {
-            button:active, .song-card:active {
-                transform: scale(0.98);
-            }
-        }
-        
-        #add-button:active { 
-            transform: scale(0.9); 
-        }
-
-        @media (min-width: 768px) {
-            #add-button:active { 
-                transform: translateX(-50%) scale(0.9); 
-            }
-        }
-
-        .details-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: var(--unit) calc(var(--unit) * 1.5) var(--unit) var(--unit); 
-            background-color: var(--color-background); 
-        }
-        
-        .back-button { 
-            font-size: var(--body); 
-            color: var(--color-brand); 
-            background: none; 
-            border: none; 
-            padding: var(--unit) calc(var(--unit) * 2); 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 4px; 
-            font-weight: 400; 
-        }
-        
-        .back-button svg { width: 24px; height: 24px; }
-        
-        .details-actions { 
-            display: flex; 
-            gap: var(--unit);
-            flex-wrap: wrap;
-        }
-
-        @media (min-width: 1024px) {
-            .details-actions {
-                gap: calc(var(--unit) * 1.5);
-            }
-        }
-        
-        .edit-button, .add-to-setlist-button { 
-            font-size: var(--subhead); 
-            font-weight: 600; 
-            border: none; 
-            padding: calc(var(--unit) * 1.5) calc(var(--unit) * 2.5); 
-            border-radius: calc(var(--unit) * 1.5); 
-            cursor: pointer;
-            transition: all 0.2s ease;
-            flex: 1;
-            min-width: 120px;
-        }
-        
-        .edit-button { 
-            background-color: var(--color-surface-secondary); 
-            color: var(--color-text-primary);
-        }
-        
-        .edit-button:hover {
-            background-color: #E8E8ED;
-        }
-        
-        .add-to-setlist-button { 
-            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
-            color: white;
-            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.25);
-        }
-        
-        .add-to-setlist-button:hover {
-            box-shadow: 0 4px 12px rgba(10, 132, 255, 0.3);
-            transform: translateY(-1px);
-        }
-        
-        .song-details { 
-            padding: 0 calc(var(--unit) * 2.5) calc(var(--unit) * 2.5); 
-            background-color: var(--color-background); 
-        }
-        
-        .song-details h2 { font-size: var(--title-1); margin-bottom: var(--unit); }
-        
-        .song-details p { 
-            font-size: var(--body); 
-            color: var(--color-text-secondary); 
-            margin-bottom: calc(var(--unit) * 3); 
-        }
-        
-        .chords { 
-            background: linear-gradient(135deg, #F8F8FA 0%, #F2F2F7 100%);
-            padding: calc(var(--unit) * 3); 
-            border-radius: calc(var(--unit) * 2); 
-            white-space: pre-wrap; 
-            font-family: var(--font-family-mono); 
-            line-height: 1.8; 
-            font-size: 15px;
-            border: 1px solid var(--color-border);
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            word-wrap: break-word;
-            overflow-x: auto;
-        }
-
-        @media (min-width: 1024px) {
-            .chords {
-                font-size: 16px;
-                padding: calc(var(--unit) * 4);
-            }
-        }
-        
-        .add-form { 
-            display: flex; 
-            flex-direction: column; 
-            padding: 0 calc(var(--unit) * 2.5) calc(var(--unit) * 2.5); 
-            gap: calc(var(--unit) * 2); 
-            background-color: var(--color-background); 
-        }
-        
-        .add-form h2 { 
-            font-size: var(--large-title); 
-            margin-bottom: var(--unit); 
-        }
-        
-        .add-form input, .add-form textarea { 
-            width: 100%; 
-            padding: calc(var(--unit) * 2); 
-            border: none; 
-            border-radius: calc(var(--unit) * 1.5); 
-            font-size: var(--body); 
-            background-color: var(--color-surface-secondary); 
-            border: 1px solid var(--color-border);
-            font-family: inherit;
-        }
-        
-        .form-buttons { 
-            display: flex; 
-            gap: var(--unit); 
-            margin-top: var(--unit);
-            flex-wrap: wrap;
-        }
-        
-        .form-buttons button { 
-            flex-grow: 1; 
-            min-width: 140px;
-            padding: calc(var(--unit) * 2); 
-            border: none; 
-            border-radius: calc(var(--unit) * 1.5); 
-            font-size: var(--body); 
-            font-weight: 600; 
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        @media (min-width: 768px) {
-            .form-buttons {
-                gap: calc(var(--unit) * 1.5);
-            }
-        }
-        
-        .save-button { 
-            background: linear-gradient(135deg, var(--color-success) 0%, #30CC54 100%);
-            color: white;
-            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
-        }
-        
-        .save-button:hover {
-            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
-            transform: translateY(-1px);
-        }
-        
-        .delete-button { 
-            background: linear-gradient(135deg, var(--color-danger) 0%, #FF6059 100%);
-            color: white;
-            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.25);
-        }
-        
-        .delete-button:hover {
-            box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
-            transform: translateY(-1px);
-        }
-        
-        .empty-state { 
-            text-align: center; 
-            padding: calc(var(--unit) * 8) calc(var(--unit) * 2.5); 
-            color: var(--color-text-secondary);
-            grid-column: 1 / -1;
-        }
-
-        @media (min-width: 768px) {
-            .empty-state {
-                padding: calc(var(--unit) * 12) calc(var(--unit) * 4);
-                font-size: 18px;
-            }
-        }
-
-        .modal-backdrop { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background-color: rgba(0, 0, 0, 0.5); 
-            z-index: 100; 
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.2s ease;
-        }
-        
-        .modal-content { 
-            background-color: var(--color-background);
-            padding: calc(var(--unit) * 3); 
-            border-radius: calc(var(--unit) * 3); 
-            width: 90%; 
-            max-width: 350px; 
-            max-height: 70vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @media (min-width: 768px) {
-            .modal-content {
-                max-width: 450px;
-                padding: calc(var(--unit) * 4);
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-content h3 {
-            font-size: var(--title-2);
-            margin: 0 0 calc(var(--unit) * 2) 0;
-            font-weight: 600;
-        }
-
-        .modal-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 calc(var(--unit) * 2) 0;
-        }
-
-        .modal-list-item {
-            padding: calc(var(--unit) * 2);
-            border-bottom: 1px solid var(--color-border);
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .modal-list-item:hover {
-            background-color: var(--color-surface-secondary);
-        }
-
-        .modal-list-item h4 {
-            margin: 0 0 4px 0;
-            font-size: var(--body);
-            font-weight: 500;
-        }
-
-        .modal-list-item p {
-            margin: 0;
-            font-size: var(--subhead);
-            color: var(--color-text-secondary);
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: var(--unit);
-        }
-
-        .modal-buttons button {
-            flex: 1;
-            padding: calc(var(--unit) * 1.5);
-            border: none;
-            border-radius: calc(var(--unit) * 1.5);
-            font-size: var(--body);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .modal-cancel {
-            background-color: var(--color-surface-secondary);
-            color: var(--color-text-primary);
-        }
-
-        .modal-create {
-            background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-light) 100%);
-            color: white;
-            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.25);
-        }
-
-        .setlist-actions {
-            display: flex;
-            gap: var(--unit);
-            margin-top: calc(var(--unit) * 2);
-            flex-wrap: wrap;
-        }
-
-        @media (min-width: 1024px) {
-            .setlist-actions {
-                gap: calc(var(--unit) * 1.5);
-            }
-        }
-
-        .setlist-action-button {
-            flex: 1;
-            min-width: 140px;
-            padding: calc(var(--unit) * 1.5) calc(var(--unit) * 2);
-            border: none;
-            border-radius: calc(var(--unit) * 1.5);
-            font-size: var(--subhead);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .play-button {
-            background: linear-gradient(135deg, var(--color-success) 0%, #30CC54 100%);
-            color: white;
-            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
-        }
-
-        .edit-setlist-button {
-            background-color: var(--color-surface-secondary);
-            color: var(--color-text-primary);
-        }
-
-        .stage-view { 
-            background-color: #000000; 
-            color: #FFFFFF; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            padding: calc(var(--unit) * 2); 
-            box-sizing: border-box;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 200;
-        }
-
-        @media (min-width: 768px) {
-            .stage-view {
-                padding: calc(var(--unit) * 4);
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .stage-view {
-                padding: calc(var(--unit) * 6);
-            }
-        }
-        
-        .stage-header { 
-            width: 100%; 
-            padding-bottom: calc(var(--unit) * 2); 
-            margin-bottom: calc(var(--unit) * 2); 
-            border-bottom: 1px solid #333; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            flex-wrap: wrap;
-            gap: var(--unit);
-        }
-        
-        .stage-header-info h3 { 
-            font-size: var(--title-2); 
-            font-weight: 600;
-            margin: 0 0 4px 0;
-        }
-
-        @media (min-width: 768px) {
-            .stage-header-info h3 {
-                font-size: 32px;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .stage-header-info h3 {
-                font-size: 40px;
-            }
-        }
-        
-        .stage-header-info p { 
-            font-size: var(--subhead); 
-            color: #888; 
-            margin: 0;
-        }
-
-        @media (min-width: 768px) {
-            .stage-header-info p {
-                font-size: 18px;
-            }
-        }
-        
-        .stage-chords { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            font-family: var(--font-family-mono); 
-            font-size: 16px; 
-            line-height: 1.8; 
-            white-space: pre-wrap; 
-            text-align: left; 
-            padding: 0; 
-            background: none;
-            margin-bottom: calc(var(--unit) * 8);
-            word-wrap: break-word;
-        }
-
-        @media (min-width: 480px) {
-            .stage-chords {
-                font-size: 18px;
-            }
-        }
-
-        @media (min-width: 768px) {
-            .stage-chords {
-                font-size: 22px;
-                line-height: 2;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .stage-chords {
-                font-size: 26px;
-            }
-        }
-
-        @media (min-width: 1440px) {
-            .stage-chords {
-                font-size: 30px;
-            }
-        }
-        
-        .stage-exit { 
-            background: none; 
-            border: 1px solid #555; 
-            color: #999; 
-            border-radius: var(--unit); 
-            padding: var(--unit) calc(var(--unit) * 2); 
-            font-size: var(--subhead); 
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-
-        @media (min-width: 768px) {
-            .stage-exit {
-                font-size: 18px;
-                padding: calc(var(--unit) * 1.5) calc(var(--unit) * 3);
-            }
-        }
-
-        .stage-exit:hover {
-            border-color: #888;
-            color: #ccc;
-        }
-        
-        .stage-nav { 
-            position: fixed;
-            top: 50%; 
-            transform: translateY(-50%); 
-            background-color: rgba(255, 255, 255, 0.1);
-            border: none; 
-            color: #fff; 
-            font-size: 36px; 
-            padding: calc(var(--unit) * 1.5); 
-            cursor: pointer; 
-            opacity: 0.3; 
-            transition: opacity 0.2s;
-            z-index: 201;
-            border-radius: var(--unit);
-        }
-
-        @media (min-width: 768px) {
-            .stage-nav {
-                font-size: 48px;
-                padding: calc(var(--unit) * 2);
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .stage-nav {
-                font-size: 64px;
-                padding: calc(var(--unit) * 3);
-            }
-        }
-        
-        .stage-nav:hover { 
-            opacity: 0.8;
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .stage-nav.prev { left: var(--unit); }
-        .stage-nav.next { right: var(--unit); }
-
-        @media (min-width: 768px) {
-            .stage-nav.prev { left: calc(var(--unit) * 2); }
-            .stage-nav.next { right: calc(var(--unit) * 2); }
-        }
-
-        .stage-counter {
-            font-size: var(--subhead);
-            color: #666;
-            text-align: center;
-            position: fixed;
-            bottom: calc(var(--unit) * 2);
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        @media (min-width: 768px) {
-            .stage-counter {
-                font-size: 18px;
-                bottom: calc(var(--unit) * 3);
-            }
-        }
-    </style>
-</head>
-<body>
-    <div id="app">
-        <main id="main-content"></main>
-        <footer>
-            <button id="repertorio-button" class="nav-button">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 18V5l12-2v13M9 18a3 3 0 100-6 3 3 0 000 6zm12-2a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>Repertorio</span>
-            </button>
-            <button id="setlists-button" class="nav-button">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span>Setlists</span>
-            </button>
-        </footer>
-        <button class="add-button" id="add-button">+</button>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atendimento &amp; OS — MVP óptica domiciliar</title>
+<style>
+  :root{
+    --bg:#f3f5f4; --surf:#ffffff; --surf2:#f8faf9;
+    --ink:#1a1e22; --mut:#697076; --dim:#98a0a5; --line:#e3e7e5;
+    --acc:#0e7c6b; --acc-d:#0a5d50; --acc-bg:#e5f1ee;
+    --err:#b84a3d; --err-bg:#fbeceb;
+    --blue:#2b6cb0; --amber:#b7791f; --gray:#727b82;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+  #printDoc{display:none}
+  .app{max-width:920px;margin:0 auto;padding:0 18px 70px}
+  /* topbar */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 0 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+  .brand{display:flex;flex-direction:column}
+  .brand .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc)}
+  .brand h1{font-size:17px;font-weight:600;margin:1px 0 0;letter-spacing:-.01em}
+  .who{font-size:12px;color:var(--mut);text-align:right}
+  .who b{color:var(--ink);font-weight:600}
+  .tabs{display:flex;gap:2px;margin:14px 0 22px;background:var(--surf);border:1px solid var(--line);border-radius:11px;padding:4px}
+  .tabs button{flex:1;background:none;border:none;padding:9px 8px;border-radius:8px;font-family:var(--sans);
+    font-size:13px;font-weight:500;color:var(--mut);cursor:pointer}
+  .tabs button.on{background:var(--acc);color:#fff}
+  /* cards */
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:13px;padding:18px 20px;margin-bottom:14px}
+  .card h2{font-size:14px;font-weight:600;margin:0 0 3px}
+  .card .hint{font-size:12px;color:var(--mut);margin:0 0 15px}
+  .grid{display:grid;gap:12px}
+  .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:1fr 1fr 1fr}
+  @media(max-width:620px){.g2,.g3{grid-template-columns:1fr}}
+  label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mut);font-weight:500}
+  input,select,textarea{background:var(--surf2);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:9px 11px;font-size:14px;font-family:var(--sans);width:100%}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);background:#fff}
+  input.num{font-family:var(--mono);text-align:center}
+  input.bad{border-color:var(--err);background:var(--err-bg)}
+  .fe{font-size:11px;color:var(--err);min-height:0}
+  /* receita table */
+  .rx{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .rx table{width:100%;border-collapse:collapse}
+  .rx th,.rx td{padding:0;text-align:center}
+  .rx thead th{background:var(--surf2);font-size:11px;font-weight:600;color:var(--mut);
+    text-transform:uppercase;letter-spacing:.05em;padding:9px 4px;border-bottom:1px solid var(--line)}
+  .rx tbody th{background:var(--surf2);width:52px;font-family:var(--mono);font-size:13px;color:var(--acc-d);
+    border-right:1px solid var(--line);font-weight:600}
+  .rx td{border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .rx td:last-child,.rx th:last-child{border-right:none}
+  .rx tbody tr:last-child td,.rx tbody tr:last-child th{border-bottom:none}
+  .rx input{border:none;border-radius:0;background:transparent;text-align:center;font-family:var(--mono);padding:11px 4px}
+  .rx input:focus{background:var(--acc-bg)}
+  .rx input.bad{background:var(--err-bg)}
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1px solid var(--line);background:var(--surf2);border-radius:20px;padding:6px 13px;
+    font-size:12px;color:var(--mut);cursor:pointer;user-select:none}
+  .chip.on{background:var(--acc-bg);border-color:var(--acc);color:var(--acc-d);font-weight:600}
+  /* consent */
+  .consent{display:flex;gap:11px;align-items:flex-start;background:var(--acc-bg);
+    border:1px solid #cfe5e0;border-radius:10px;padding:13px 15px}
+  .consent input{width:18px;height:18px;margin-top:1px;flex:none;accent-color:var(--acc)}
+  .consent .t{font-size:12px;color:var(--acc-d);line-height:1.55}
+  /* actions */
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+  .btn{border:none;border-radius:9px;padding:11px 20px;font-size:14px;font-weight:600;
+    cursor:pointer;font-family:var(--sans)}
+  .btn.pri{background:var(--acc);color:#fff}
+  .btn.pri:hover{background:var(--acc-d)}
+  .btn.sec{background:var(--surf);border:1px solid var(--line);color:var(--ink)}
+  .btn.sec:hover{border-color:var(--acc)}
+  .btn.ghost{background:none;border:none;color:var(--mut)}
+  /* ordens list */
+  .ordens{display:flex;flex-direction:column;gap:10px}
+  .ord{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+    display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center}
+  .ord .id{font-family:var(--mono);font-size:12px;color:var(--acc-d)}
+  .ord .id .loc{color:var(--dim)}
+  .ord .nm{font-size:15px;font-weight:600;margin:2px 0 0}
+  .ord .meta{font-size:12px;color:var(--mut);margin:2px 0 0}
+  .ord .ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  select.status{font-family:var(--mono);font-size:11px;font-weight:600;padding:6px 8px;width:auto;text-transform:uppercase}
+  .status[data-s="enviado"]{color:var(--blue)} .status[data-s="confeccao"]{color:var(--amber)}
+  .status[data-s="pronto"]{color:var(--acc)} .status[data-s="entregue"]{color:var(--gray)}
+  .icobtn{background:var(--surf2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;
+    font-size:12px;color:var(--mut);cursor:pointer;font-weight:500}
+  .icobtn:hover{border-color:var(--acc);color:var(--acc-d)}
+  .icobtn.del:hover{border-color:var(--err);color:var(--err)}
+  .empty{border:1px dashed var(--line);border-radius:12px;padding:32px;text-align:center;color:var(--mut);font-size:14px}
+  .search{margin-bottom:14px}
+  /* transpose */
+  .tout{font-family:var(--mono);font-size:15px;background:var(--acc-bg);border:1px solid #cfe5e0;
+    border-radius:10px;padding:14px 16px;color:var(--acc-d);margin-top:14px;display:none}
+  .tout.show{display:block} .tout b{color:var(--ink)}
+  /* toast */
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:11px 20px;border-radius:24px;font-size:13px;font-weight:500;
+    opacity:0;pointer-events:none;transition:.28s;z-index:20}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .lgpd-note{font-size:11px;color:var(--dim);line-height:1.6;margin-top:10px}
+  /* print doc */
+  #printDoc{color:#000;font-family:var(--sans)}
+  .doc{width:23cm;padding:.7cm .9cm;border:1px solid #000}
+  .doc .dh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #000;padding-bottom:8px}
+  .doc .cnpj{font-size:20px;font-weight:700;letter-spacing:.02em}
+  .doc .cnpj small{display:block;font-size:10px;font-weight:400;letter-spacing:.12em;text-transform:uppercase}
+  .doc .nums{text-align:right;font-family:var(--mono);font-size:12px;line-height:1.5}
+  .doc .nums b{font-size:15px}
+  .doc h3{font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:12px 0 5px;border-bottom:1px solid #999;padding-bottom:2px}
+  .doc .cli{font-size:13px;line-height:1.5}
+  .doc .rxp{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px;margin-top:3px}
+  .doc .rxp th,.doc .rxp td{border:1px solid #000;padding:5px 8px;text-align:center}
+  .doc .rxp thead th{background:#eee;font-size:10px;text-transform:uppercase}
+  .doc .prod{font-size:12px;line-height:1.6}
+  .doc .foot{margin-top:14px;display:flex;justify-content:space-between;font-size:11px}
+  .doc .sign{margin-top:26px;border-top:1px solid #000;width:7cm;text-align:center;font-size:10px;padding-top:3px}
+  @media print{
+    .app{display:none} #printDoc{display:block}
+    @page{margin:1cm}
+  }
+</style>
+
+<div class="app" id="app">
+  <div class="top">
+    <div class="brand"><span class="k">NIT · óptica domiciliar</span><h1>Atendimento &amp; OS</h1></div>
+    <div class="who"><span id="whoName">—</span><br><span id="whoCnpj" class="dim"></span></div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button data-t="atend" class="on">Atendimento</button>
+    <button data-t="ordens">Ordens</button>
+    <button data-t="ferr">Ferramentas</button>
+    <button data-t="cfg">Ajustes</button>
+  </div>
+
+  <div id="view"></div>
+</div>
+
+<div id="printDoc"></div>
+<div id="toast"></div>
+
+<script>
+const KEY="nit_optica_os";
+const TIPOS=["visão simples","multifocal","bifocal"];
+const INDICES=["resina 1.50","resina 1.56","policarbonato","trivex","resina 1.61","resina 1.67","resina 1.74","cristal"];
+const TRATAM=["AR","fotossensível","blue light","hidrofóbico","UV"];
+const STATUS=[["enviado","enviado ao lab"],["confeccao","em confecção"],["pronto","pronto"],["entregue","entregue"]];
+let S=null, editingId=null, saveT=null;
+
+/* ---------- persistence ---------- */
+function defaults(){return{config:{nome:"",cnpj:"",localStart:1},clientes:[],ordens:[],counters:{global:1,local:1}};}
+async function load(){
+  try{const r=await window.storage.get(KEY,false); if(r&&r.value) S=JSON.parse(r.value);}catch(e){S=null;}
+  if(!S||typeof S!=="object") S=defaults();
+  S.config=Object.assign(defaults().config,S.config||{});
+  S.clientes=S.clientes||[]; S.ordens=S.ordens||[];
+  S.counters=Object.assign({global:1,local:1},S.counters||{});
+}
+function persist(){
+  clearTimeout(saveT);
+  saveT=setTimeout(async()=>{try{await window.storage.set(KEY,JSON.stringify(S),false);}catch(e){}},150);
+}
+function uid(){return Math.random().toString(36).slice(2,9);}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
+function fmtG(n){return "OS-"+String(n).padStart(6,"0");}
+function today(){return new Date().toISOString().slice(0,10);}
+function brDate(iso){if(!iso)return"";const[y,m,d]=iso.split("-");return d+"/"+m+"/"+y;}
+
+/* ---------- navigation ---------- */
+let current="atend";
+function nav(t){current=t;document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));draw();}
+
+/* ---------- receita helpers ---------- */
+const RX_FIELDS=["esf","cil","eixo","ad"];
+function blankRx(){return{od:{esf:"",cil:"",eixo:"",ad:""},oe:{esf:"",cil:"",eixo:"",ad:""}};}
+function validRx(rx){
+  const errs={};
+  for(const eye of ["od","oe"]){
+    const e=rx[eye];
+    for(const f of ["esf","cil","ad"]){
+      if(e[f]!==""&&isNaN(parseFloat(e[f]))) errs[eye+f]="número";
+      else if(f!=="ad"&&e[f]!==""&&Math.abs(parseFloat(e[f]))>30) errs[eye+f]="fora de faixa";
+      else if(f==="ad"&&e[f]!==""&&(parseFloat(e[f])<0||parseFloat(e[f])>4)) errs[eye+f]="0–4";
+    }
+    if(e.eixo!==""){
+      const x=parseInt(e.eixo);
+      if(isNaN(x)||x<0||x>180) errs[eye+"eixo"]="0–180";
+    }
+    if(e.cil!==""&&parseFloat(e.cil)!==0&&e.eixo==="") errs[eye+"eixo"]="obrigatório com cil.";
+  }
+  return errs;
+}
+
+/* ---------- ATENDIMENTO ---------- */
+let form=null;
+function newForm(){return{clienteId:null,nome:"",contato:"",endereco:"",rx:blankRx(),
+  medidas:{dnpOD:"",dnpOE:"",altOD:"",altOE:""},
+  produto:{armacao:"",tipo:"",indice:"",tratam:[],obs:""},valor:"",status:"enviado",consent:false};}
+
+function loadOrdemToForm(o){
+  const c=S.clientes.find(x=>x.id===o.clienteId)||{};
+  form={clienteId:o.clienteId,nome:c.nome||"",contato:c.contato||"",endereco:c.endereco||"",
+    rx:JSON.parse(JSON.stringify(o.receita)),medidas:Object.assign({},o.medidas),
+    produto:Object.assign({tratam:[]},o.produto),valor:o.valor||"",status:o.status,consent:true};
+  editingId=o.id;nav("atend");
+}
+
+function drawAtend(){
+  if(!form) form=newForm();
+  const dl=S.clientes.map(c=>`<option value="${esc(c.nome)}">`).join("");
+  const v=document.getElementById("view");
+  v.innerHTML=`
+  <div class="card">
+    <h2>Cliente</h2>
+    <p class="hint">${editingId?"Editando "+fmtG(S.ordens.find(o=>o.id===editingId).osGlobal):"Novo atendimento. Digite um nome já atendido para reaproveitar os dados."}</p>
+    <div class="grid g2">
+      <label class="f">Nome<input id="f_nome" list="cli_dl" value="${esc(form.nome)}" placeholder="Nome do cliente"></label>
+      <label class="f">Contato<input id="f_contato" value="${esc(form.contato)}" placeholder="Telefone / WhatsApp"></label>
     </div>
-    
-        <script>
-        // --- INÍCIO DA LÓGICA DE PERSISTÊNCIA ---
+    <datalist id="cli_dl">${dl}</datalist>
+    <label class="f" style="margin-top:12px">Endereço do atendimento<input id="f_end" value="${esc(form.endereco)}" placeholder="Onde o atendimento aconteceu"></label>
+    <div id="histBox"></div>
+  </div>
 
-        // Função para carregar os dados do localStorage
-        function loadData() {
-            const savedSongs = localStorage.getItem('musicpro_songs');
-            const savedSetlists = localStorage.getItem('musicpro_setlists');
+  <div class="card">
+    <h2>Receita</h2>
+    <p class="hint">Valores em dioptria. Eixo 0–180. A faixa é validada para evitar erro de registro.</p>
+    <div class="rx"><table><thead><tr>
+      <th></th><th>Esférico</th><th>Cilíndrico</th><th>Eixo</th><th>Adição</th></tr></thead>
+      <tbody>${["od","oe"].map(eye=>`<tr><th>${eye.toUpperCase()}</th>${RX_FIELDS.map(f=>{
+        const ph=f==="eixo"?"0–180":(f==="ad"?"+0.00":"±0.00");
+        return `<td><input class="num rxi" data-eye="${eye}" data-f="${f}" value="${esc(form.rx[eye][f])}" placeholder="${ph}" inputmode="decimal"></td>`;
+      }).join("")}</tr>`).join("")}</tbody></table></div>
+    <p class="fe" id="rxErr"></p>
+  </div>
 
-            // Carrega as músicas ou usa os dados de exemplo
-            let songs = savedSongs ? JSON.parse(savedSongs) : [
-                { id: 1, name: "Wonderwall", artist: "Oasis", tone: "Em", status: "Dominada", chords: "[Intro] Em G D A7/4...\n\nToday is gonna be the day..." },
-                { id: 2, name: "Imagine", artist: "John Lennon", tone: "C", status: "Estudando", chords: "[Intro] C Cmaj7 F...\n\nImagine there is no heaven..." },
-                { id: 3, name: "Como Nossos Pais", artist: "Belchior", tone: "Am", status: "Nova", chords: "[Intro] Am G C...\n\nNao quero lhe falar..." },
-            ];
+  <div class="card">
+    <h2>Medidas</h2>
+    <div class="grid g2">
+      <label class="f">DNP — OD (mm)<input class="num md" data-k="dnpOD" value="${esc(form.medidas.dnpOD)}" inputmode="decimal"></label>
+      <label class="f">DNP — OE (mm)<input class="num md" data-k="dnpOE" value="${esc(form.medidas.dnpOE)}" inputmode="decimal"></label>
+      <label class="f">Altura óptica — OD (mm)<input class="num md" data-k="altOD" value="${esc(form.medidas.altOD)}" inputmode="decimal"></label>
+      <label class="f">Altura óptica — OE (mm)<input class="num md" data-k="altOE" value="${esc(form.medidas.altOE)}" inputmode="decimal"></label>
+    </div>
+  </div>
 
-            // Carrega os setlists ou usa os dados de exemplo
-            let setlists = savedSetlists ? JSON.parse(savedSetlists) : [
-                { id: 1, name: "Show no Barzinho", songIds: [1, 3, 2] }
-            ];
-            
-            // Calcula o próximo ID para evitar duplicados
-            const nextSongId = songs.length > 0 ? Math.max(...songs.map(s => s.id)) + 1 : 1;
-            const nextSetlistId = setlists.length > 0 ? Math.max(...setlists.map(s => s.id)) + 1 : 1;
+  <div class="card">
+    <h2>Produto</h2>
+    <div class="grid g2">
+      <label class="f">Armação<input id="p_arm" value="${esc(form.produto.armacao)}" placeholder="Marca / modelo"></label>
+      <label class="f">Tipo de lente<select id="p_tipo"><option value="">—</option>${TIPOS.map(t=>`<option ${form.produto.tipo===t?"selected":""}>${t}</option>`).join("")}</select></label>
+      <label class="f">Material / índice<select id="p_ind"><option value="">—</option>${INDICES.map(t=>`<option ${form.produto.indice===t?"selected":""}>${t}</option>`).join("")}</select></label>
+      <label class="f">Valor (opcional, p/ recibo)<input id="p_valor" value="${esc(form.valor)}" placeholder="R$" inputmode="decimal"></label>
+    </div>
+    <p class="hint" style="margin:15px 0 7px">Tratamentos</p>
+    <div class="chips" id="tratChips">${TRATAM.map(t=>`<span class="chip ${form.produto.tratam.includes(t)?"on":""}" data-t="${t}">${t}</span>`).join("")}</div>
+    <label class="f" style="margin-top:14px">Observações<textarea id="p_obs" rows="2">${esc(form.produto.obs)}</textarea></label>
+  </div>
 
-            return { songs, setlists, nextSongId, nextSetlistId };
-        }
+  <div class="card">
+    <h2>Consentimento (LGPD)</h2>
+    <label class="consent">
+      <input type="checkbox" id="consentChk" ${form.consent?"checked":""}>
+      <span class="t">O cliente autoriza o registro da receita para confecção da lente e histórico de atendimento, e o envio ao laboratório escolhido. Dado sensível de saúde — tratado só para essa finalidade, revogável a qualquer momento.</span>
+    </label>
+    <p class="lgpd-note">Você é o Controlador dos dados; a ferramenta apenas processa. Guardamos só o necessário para a OS e o histórico.</p>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn pri" id="saveBtn">${editingId?"Salvar alterações":"Salvar OS"}</button>
+      <button class="btn sec" id="savePrintBtn">Salvar e imprimir</button>
+      ${editingId?'<button class="btn ghost" id="cancelEdit">Cancelar edição</button>':''}
+    </div>
+  </div>`;
 
-        // Função para salvar todos os dados no localStorage
-        function saveData() {
-            localStorage.setItem('musicpro_songs', JSON.stringify(songs));
-            localStorage.setItem('musicpro_setlists', JSON.stringify(setlists));
-            console.log("Dados salvos no localStorage!");
-        }
+  // wire cliente
+  const nameEl=document.getElementById("f_nome");
+  nameEl.addEventListener("input",e=>{form.nome=e.target.value;});
+  nameEl.addEventListener("change",e=>{ const m=S.clientes.find(c=>c.nome.toLowerCase()===e.target.value.trim().toLowerCase());
+    if(m){form.clienteId=m.id;form.contato=m.contato;form.endereco=m.endereco;document.getElementById("f_contato").value=m.contato||"";document.getElementById("f_end").value=m.endereco||"";drawHist(m);} });
+  document.getElementById("f_contato").addEventListener("input",e=>form.contato=e.target.value);
+  document.getElementById("f_end").addEventListener("input",e=>form.endereco=e.target.value);
+  if(form.clienteId){const m=S.clientes.find(c=>c.id===form.clienteId);if(m)drawHist(m);}
 
-        // Carrega os dados iniciais
-        let { songs, setlists, nextSongId, nextSetlistId } = loadData();
+  // wire receita
+  document.querySelectorAll(".rxi").forEach(i=>i.addEventListener("input",e=>{
+    form.rx[e.target.dataset.eye][e.target.dataset.f]=e.target.value; liveRxValidate();}));
+  // medidas
+  document.querySelectorAll(".md").forEach(i=>i.addEventListener("input",e=>form.medidas[e.target.dataset.k]=e.target.value));
+  // produto
+  document.getElementById("p_arm").addEventListener("input",e=>form.produto.armacao=e.target.value);
+  document.getElementById("p_tipo").addEventListener("change",e=>form.produto.tipo=e.target.value);
+  document.getElementById("p_ind").addEventListener("change",e=>form.produto.indice=e.target.value);
+  document.getElementById("p_valor").addEventListener("input",e=>form.valor=e.target.value);
+  document.getElementById("p_obs").addEventListener("input",e=>form.produto.obs=e.target.value);
+  document.querySelectorAll("#tratChips .chip").forEach(ch=>ch.addEventListener("click",()=>{
+    const t=ch.dataset.t;const i=form.produto.tratam.indexOf(t);
+    if(i>=0)form.produto.tratam.splice(i,1);else form.produto.tratam.push(t);ch.classList.toggle("on");}));
+  document.getElementById("consentChk").addEventListener("change",e=>form.consent=e.target.checked);
+  document.getElementById("saveBtn").onclick=()=>saveOrdem(false);
+  document.getElementById("savePrintBtn").onclick=()=>saveOrdem(true);
+  if(editingId)document.getElementById("cancelEdit").onclick=()=>{editingId=null;form=newForm();nav("atend");};
+}
 
-        // --- FIM DA LÓGICA DE PERSISTÊNCIA ---
+function drawHist(cli){
+  const box=document.getElementById("histBox");if(!box)return;
+  const prev=S.ordens.filter(o=>o.clienteId===cli.id).sort((a,b)=>b.data.localeCompare(a.data));
+  if(!prev.length){box.innerHTML="";return;}
+  const last=prev[0];const r=last.receita;
+  box.innerHTML=`<div style="margin-top:13px;background:var(--surf2);border:1px solid var(--line);border-radius:9px;padding:11px 13px;font-size:12px">
+    <b style="color:var(--acc-d)">Histórico — última OS ${brDate(last.data)}</b>
+    <div style="font-family:var(--mono);margin-top:5px;color:var(--mut)">
+      OD ${rxLine(r.od)} · OE ${rxLine(r.oe)}</div>
+    <button class="icobtn" id="copyRx" style="margin-top:9px">Copiar receita anterior</button></div>`;
+  document.getElementById("copyRx").onclick=()=>{form.rx=JSON.parse(JSON.stringify(last.receita));drawAtend();};
+}
+function rxLine(e){return `${e.esf||"—"} ${e.cil||""} ${e.eixo?"x"+e.eixo:""} ${e.ad?"add "+e.ad:""}`.trim();}
 
+function liveRxValidate(){
+  const errs=validRx(form.rx);
+  document.querySelectorAll(".rxi").forEach(i=>i.classList.toggle("bad",!!errs[i.dataset.eye+i.dataset.f]));
+  const msgs=Object.entries(errs).map(([k,val])=>k.slice(0,2).toUpperCase()+" "+k.slice(2)+": "+val);
+  document.getElementById("rxErr").textContent=msgs.join("  ·  ");
+  return Object.keys(errs).length===0;
+}
 
-        const mainContent = document.getElementById('main-content');
-        const viewRepertorioButton = document.querySelector('#repertorio-button');
-        const viewSetlistsButton = document.querySelector('#setlists-button');
-        const addButton = document.querySelector('#add-button');
+function saveOrdem(printAfter){
+  if(!form.nome.trim()){toast("Informe o nome do cliente.");return;}
+  if(!liveRxValidate()){toast("Corrija a receita antes de salvar.");return;}
+  if(!form.consent){toast("Marque o consentimento LGPD para salvar.");return;}
+  // upsert cliente
+  let cli=form.clienteId?S.clientes.find(c=>c.id===form.clienteId):null;
+  if(!cli){cli=S.clientes.find(c=>c.nome.toLowerCase()===form.nome.trim().toLowerCase());}
+  if(cli){cli.nome=form.nome.trim();cli.contato=form.contato;cli.endereco=form.endereco;}
+  else{cli={id:uid(),nome:form.nome.trim(),contato:form.contato,endereco:form.endereco};S.clientes.push(cli);}
 
-        function renderView(viewFunction) {
-            mainContent.innerHTML = '';
-            viewFunction(mainContent);
-        }
+  let ordem;
+  if(editingId){
+    ordem=S.ordens.find(o=>o.id===editingId);
+    ordem.clienteId=cli.id;ordem.receita=form.rx;ordem.medidas=form.medidas;
+    ordem.produto={armacao:form.produto.armacao,tipo:form.produto.tipo,indice:form.produto.indice,tratam:form.produto.tratam,obs:form.produto.obs};
+    ordem.valor=form.valor;ordem.status=form.status;
+    toast("OS atualizada.");
+  }else{
+    ordem={id:uid(),osGlobal:S.counters.global,osLocal:S.counters.local,clienteId:cli.id,data:today(),
+      receita:form.rx,medidas:form.medidas,
+      produto:{armacao:form.produto.armacao,tipo:form.produto.tipo,indice:form.produto.indice,tratam:form.produto.tratam,obs:form.produto.obs},
+      valor:form.valor,status:form.status,consent:{aceito:true,data:new Date().toISOString()}};
+    S.ordens.push(ordem);
+    S.counters.global++;S.counters.local++;
+    toast(fmtG(ordem.osGlobal)+" criada.");
+  }
+  persist();
+  const savedId=ordem.id;editingId=null;form=newForm();
+  if(printAfter){printOrdem(savedId,"os");}
+  nav("ordens");
+}
 
-        function cycleSongStatus(songId) {
-            const song = songs.find(function(s) { return s.id === songId; });
-            if (!song) return;
-            const statuses = ["Nova", "Estudando", "Dominada"];
-            const currentIndex = statuses.indexOf(song.status);
-            song.status = statuses[(currentIndex + 1) % statuses.length];
-            saveData(); // Salva após mudar o status
-        }
+/* ---------- ORDENS ---------- */
+function drawOrdens(){
+  const v=document.getElementById("view");
+  const list=[...S.ordens].sort((a,b)=>b.osGlobal-a.osGlobal);
+  v.innerHTML=`<input class="search" id="ordSearch" placeholder="Buscar por cliente ou número">
+    <div class="ordens" id="ordList"></div>`;
+  const render=(q="")=>{
+    const box=document.getElementById("ordList");
+    const f=list.filter(o=>{const c=S.clientes.find(x=>x.id===o.clienteId)||{};
+      const s=(c.nome+" "+fmtG(o.osGlobal)+" #"+o.osLocal).toLowerCase();return s.includes(q.toLowerCase());});
+    if(!f.length){box.innerHTML='<div class="empty">Nenhuma ordem ainda. Comece um atendimento.</div>';return;}
+    box.innerHTML="";
+    f.forEach(o=>{
+      const c=S.clientes.find(x=>x.id===o.clienteId)||{nome:"—"};
+      const el=document.createElement("div");el.className="ord";
+      el.innerHTML=`<div><div class="id">${fmtG(o.osGlobal)} <span class="loc">· sua #${o.osLocal}</span></div>
+        <div class="nm">${esc(c.nome)}</div>
+        <div class="meta">${brDate(o.data)} · ${esc(o.produto.tipo||"lente")} ${esc(o.produto.indice||"")}</div></div>
+        <div class="ctrl">
+          <select class="status" data-s="${o.status}">${STATUS.map(([k,l])=>`<option value="${k}" ${o.status===k?"selected":""}>${l}</option>`).join("")}</select>
+          <button class="icobtn" data-a="os">OS</button>
+          <button class="icobtn" data-a="recibo">recibo</button>
+          <button class="icobtn" data-a="edit">editar</button>
+          <button class="icobtn del" data-a="del">×</button>
+        </div>`;
+      el.querySelector(".status").addEventListener("change",e=>{o.status=e.target.value;e.target.dataset.s=e.target.value;persist();});
+      el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{
+        const a=b.dataset.a;
+        if(a==="os")printOrdem(o.id,"os");
+        else if(a==="recibo")printOrdem(o.id,"recibo");
+        else if(a==="edit")loadOrdemToForm(o);
+        else if(a==="del"){if(confirm("Excluir "+fmtG(o.osGlobal)+"?")){S.ordens=S.ordens.filter(x=>x.id!==o.id);persist();drawOrdens();}}
+      });
+      box.appendChild(el);
+    });
+  };
+  render();
+  document.getElementById("ordSearch").addEventListener("input",e=>render(e.target.value));
+}
 
-        function repertorioView(container) {
-            viewRepertorioButton.classList.add('active');
-            viewSetlistsButton.classList.remove('active');
-            addButton.classList.remove('hidden');
+/* ---------- FERRAMENTAS: transposição ---------- */
+function drawFerr(){
+  const v=document.getElementById("view");
+  v.innerHTML=`<div class="card">
+    <h2>Transposição de eixo/cilíndrico</h2>
+    <p class="hint">Converte a notação (positiva ↔ negativa) quando a lente tem limite de faixa por sinal. Cálculo na hora do atendimento.</p>
+    <div class="grid g3">
+      <label class="f">Esférico<input class="num" id="t_esf" inputmode="decimal" placeholder="±0.00"></label>
+      <label class="f">Cilíndrico<input class="num" id="t_cil" inputmode="decimal" placeholder="±0.00"></label>
+      <label class="f">Eixo<input class="num" id="t_eixo" inputmode="numeric" placeholder="0–180"></label>
+    </div>
+    <div class="actions" style="margin-top:14px"><button class="btn pri" id="t_go">Transpor</button></div>
+    <div class="tout" id="t_out"></div>
+  </div>`;
+  document.getElementById("t_go").onclick=()=>{
+    const esf=parseFloat(document.getElementById("t_esf").value);
+    const cil=parseFloat(document.getElementById("t_cil").value);
+    const eixo=parseInt(document.getElementById("t_eixo").value);
+    const out=document.getElementById("t_out");
+    if(isNaN(esf)||isNaN(cil)||isNaN(eixo)||eixo<0||eixo>180){out.className="tout show";out.innerHTML="Preencha os três campos com valores válidos (eixo 0–180).";return;}
+    const nEsf=(esf+cil), nCil=-cil; let nEixo=eixo+90; if(nEixo>180)nEixo-=90*2>0?90:0; nEixo=(eixo+90)%180; if(nEixo===0)nEixo=180;
+    const sg=n=>(n>0?"+":"")+n.toFixed(2);
+    out.className="tout show";
+    out.innerHTML=`Original: <b>${sg(esf)} ${sg(cil)} x ${eixo}°</b><br>Transposta: <b>${sg(nEsf)} ${sg(nCil)} x ${nEixo}°</b>`;
+  };
+}
 
-            container.innerHTML = '<div class="view"><div class="main-header"><h2>Repertorio</h2><input type="text" id="search-input" placeholder="Pesquisar musicas ou artistas..."></div><div class="list-container" id="song-list-container"></div></div>';
+/* ---------- AJUSTES ---------- */
+function drawCfg(){
+  const v=document.getElementById("view");
+  v.innerHTML=`<div class="card">
+    <h2>Dados do consultor (MEI)</h2>
+    <p class="hint">Aparecem na OS impressa como identificação formal. O cliente do laboratório é você — a ferramenta só gera o documento.</p>
+    <div class="grid g2">
+      <label class="f">Nome / razão<input id="c_nome" value="${esc(S.config.nome)}"></label>
+      <label class="f">CNPJ<input id="c_cnpj" value="${esc(S.config.cnpj)}" placeholder="00.000.000/0001-00"></label>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Numeração local</h2>
+    <p class="hint">Sua contagem pessoal, como no caderno. A próxima OS será a <b>#${S.counters.local}</b>. Ajuste se está continuando de outro número.</p>
+    <label class="f" style="max-width:200px">Próxima OS local (#)<input class="num" id="c_local" value="${S.counters.local}" inputmode="numeric"></label>
+    <div class="actions" style="margin-top:14px"><button class="btn sec" id="c_save">Salvar ajustes</button></div>
+    <p class="lgpd-note">Armazenamento local persistente neste MVP. No próximo passo, isto mapeia direto para o Firebase RTDB — a estrutura de dados já está no formato certo.</p>
+  </div>`;
+  document.getElementById("c_save").onclick=()=>{
+    S.config.nome=document.getElementById("c_nome").value.trim();
+    S.config.cnpj=document.getElementById("c_cnpj").value.trim();
+    const l=parseInt(document.getElementById("c_local").value);if(l>0)S.counters.local=l;
+    persist();paintWho();toast("Ajustes salvos.");
+  };
+}
 
-            const searchInput = container.querySelector('#search-input');
-            const songListContainer = container.querySelector('#song-list-container');
+/* ---------- PRINT ---------- */
+function printOrdem(id,mode){
+  const o=S.ordens.find(x=>x.id===id);if(!o)return;
+  const c=S.clientes.find(x=>x.id===o.clienteId)||{};
+  const rxRow=e=>`<tr><th>${e}</th><td>${sgv(o.receita[e.toLowerCase()].esf)}</td><td>${sgv(o.receita[e.toLowerCase()].cil)}</td><td>${o.receita[e.toLowerCase()].eixo||"—"}</td><td>${o.receita[e.toLowerCase()].ad?sgv(o.receita[e.toLowerCase()].ad):"—"}</td></tr>`;
+  const trat=o.produto.tratam&&o.produto.tratam.length?o.produto.tratam.join(", "):"—";
+  const title=mode==="recibo"?"Recibo / Orçamento":"Ordem de Serviço";
+  const valorBlock=(mode==="recibo")?`<h3>Valor</h3><div class="prod" style="font-size:16px"><b>${o.valor?("R$ "+esc(o.valor)):"—"}</b></div>`:"";
+  const medidas=`DNP OD ${o.medidas.dnpOD||"—"} / OE ${o.medidas.dnpOE||"—"} mm · Altura OD ${o.medidas.altOD||"—"} / OE ${o.medidas.altOE||"—"} mm`;
+  document.getElementById("printDoc").innerHTML=`
+   <div class="doc">
+     <div class="dh">
+       <div class="cnpj"><small>CNPJ MEI</small>${esc(S.config.cnpj||"—")}<div style="font-size:11px;font-weight:400">${esc(S.config.nome||"")}</div></div>
+       <div class="nums"><small>${title}</small><b>${fmtG(o.osGlobal)}</b><br>sua ref. #${o.osLocal}<br>${brDate(o.data)}</div>
+     </div>
+     <h3>Cliente</h3>
+     <div class="cli"><b>${esc(c.nome)}</b><br>${esc(c.contato||"")}${c.endereco?" · "+esc(c.endereco):""}</div>
+     <h3>Receita</h3>
+     <table class="rxp"><thead><tr><th></th><th>Esf.</th><th>Cil.</th><th>Eixo</th><th>Adição</th></tr></thead>
+       <tbody>${rxRow("OD")}${rxRow("OE")}</tbody></table>
+     <div class="cli" style="margin-top:5px;font-size:11px">${medidas}</div>
+     <h3>Produto</h3>
+     <div class="prod">Armação: ${esc(o.produto.armacao||"—")}<br>
+       Lente: ${esc(o.produto.tipo||"—")} · ${esc(o.produto.indice||"—")} · tratamentos: ${esc(trat)}<br>
+       ${o.produto.obs?"Obs.: "+esc(o.produto.obs):""}</div>
+     ${valorBlock}
+     <div class="foot"><span>Status: ${esc((STATUS.find(s=>s[0]===o.status)||["",""])[1])}</span><span>Consentimento LGPD registrado</span></div>
+     <div class="sign">assinatura do cliente</div>
+   </div>`;
+  setTimeout(()=>window.print(),60);
+}
+function sgv(x){if(x===""||x==null)return"—";const n=parseFloat(x);if(isNaN(n))return esc(x);return(n>0?"+":"")+n.toFixed(2);}
 
-            function displaySongs(searchTerm) {
-                searchTerm = searchTerm || '';
-                songListContainer.innerHTML = '';
-                const lowerCaseSearchTerm = searchTerm.toLowerCase();
-                const filteredSongs = songs.filter(function(song) {
-                    return song.name.toLowerCase().includes(lowerCaseSearchTerm) || song.artist.toLowerCase().includes(lowerCaseSearchTerm);
-                });
-
-                if (filteredSongs.length === 0) {
-                    songListContainer.innerHTML = '<p class="empty-state">Nenhuma musica encontrada.</p>';
-                    return;
-                }
-
-                filteredSongs.forEach(function(song) {
-                    const songCard = document.createElement('div');
-                    songCard.className = 'song-card';
-                    songCard.innerHTML = '<div class="song-info"><h3>' + song.name + '</h3><p>' + song.artist + '</p></div><button class="status-button status-' + song.status.toLowerCase() + '">' + song.status + '</button>';
-                    songCard.addEventListener('click', function() {
-                        renderView(songDetailsView(song));
-                    });
-                    const statusButton = songCard.querySelector('.status-button');
-                    statusButton.addEventListener('click', function(event) {
-                        event.stopPropagation();
-                        cycleSongStatus(song.id);
-                        displaySongs(searchInput.value);
-                    });
-                    songListContainer.appendChild(songCard);
-                });
-            }
-
-            searchInput.addEventListener('input', function(e) {
-                displaySongs(e.target.value);
-            });
-            displaySongs();
-        }
-
-        function setlistsView(container) {
-            viewRepertorioButton.classList.remove('active');
-            viewSetlistsButton.classList.add('active');
-            addButton.classList.remove('hidden');
-
-            let listHTML = '';
-            if (setlists.length === 0) {
-                listHTML = '<p class="empty-state">Crie seu primeiro setlist.</p>';
-            } else {
-                setlists.forEach(function(setlist) {
-                    const songCount = setlist.songIds.length;
-                    listHTML += '<div class="song-card" data-setlist-id="' + setlist.id + '"><div class="song-info"><h3>' + setlist.name + '</h3><p>' + songCount + ' musica(s)</p></div></div>';
-                });
-            }
-
-            container.innerHTML = '<div class="view"><div class="main-header"><h2>Setlists</h2></div><div class="list-container">' + listHTML + '</div></div>';
-            
-            container.querySelectorAll('.song-card').forEach(function(card) {
-                card.addEventListener('click', function() {
-                    const setlistId = Number(card.dataset.setlistId);
-                    const setlist = setlists.find(function(s) {
-                        return s.id === setlistId;
-                    });
-                    if (setlist) {
-                        renderView(setlistDetailsView(setlist));
-                    }
-                });
-            });
-        }
-
-        function songDetailsView(song) {
-            return function(container) {
-                addButton.classList.add('hidden');
-                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Repertorio</span></button></div><div class="song-details"><h2>' + song.name + '</h2><p>' + song.artist + '</p><div class="details-actions"><button class="add-to-setlist-button">Adicionar ao Setlist</button><button class="edit-button">Editar</button></div><pre class="chords">' + song.chords + '</pre></div></div>';
-                container.querySelector('.back-button' ).addEventListener('click', function() { renderView(repertorioView); });
-                container.querySelector('.edit-button').addEventListener('click', function() { renderView(addSongFormView(song)); });
-                container.querySelector('.add-to-setlist-button').addEventListener('click', function() { openAddToSetlistModal(song); });
-            };
-        }
-
-        function addSongFormView(songToEdit) {
-            return function(container) {
-                const isEditing = songToEdit !== null && songToEdit !== undefined;
-                const title = isEditing ? 'Editar Musica' : 'Adicionar Musica';
-                const buttonLabel = isEditing ? 'Salvar Alteracoes' : 'Salvar Musica';
-
-                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Cancelar</span></button></div><form class="add-form"><h2>' + title + '</h2><input type="text" id="song-name" placeholder="Nome da Musica" value="' + (isEditing ? songToEdit.name : '' ) + '" required><input type="text" id="song-artist" placeholder="Artista" value="' + (isEditing ? songToEdit.artist : '') + '" required><input type="text" id="song-tone" placeholder="Tom (ex: C, Am, G)" value="' + (isEditing ? songToEdit.tone : '') + '"><textarea id="song-chords" placeholder="Cole a cifra aqui..." rows="10">' + (isEditing ? songToEdit.chords : '') + '</textarea><div class="form-buttons"><button type="submit" class="save-button">' + buttonLabel + '</button>' + (isEditing ? '<button type="button" class="delete-button">Apagar Musica</button>' : '') + '</div></form></div>';
-
-                const backButton = container.querySelector('.back-button');
-                if (isEditing) {
-                    backButton.addEventListener('click', function() { renderView(songDetailsView(songToEdit)); });
-                } else {
-                    backButton.addEventListener('click', function() { renderView(repertorioView); });
-                }
-
-                if (isEditing) {
-                    const deleteButton = container.querySelector('.delete-button');
-                    deleteButton.addEventListener('click', function() {
-                        if (confirm('Tem certeza que quer apagar "' + songToEdit.name + '"?')) {
-                            songs = songs.filter(function(s) { return s.id !== songToEdit.id; });
-                            saveData(); // Salva após apagar
-                            renderView(repertorioView);
-                        }
-                    });
-                }
-
-                container.querySelector('form').addEventListener('submit', function(event) {
-                    event.preventDefault();
-                    if (isEditing) {
-                        const songIndex = songs.findIndex(function(s) { return s.id === songToEdit.id; });
-                        if (songIndex > -1) {
-                            songs[songIndex].name = document.getElementById('song-name').value;
-                            songs[songIndex].artist = document.getElementById('song-artist').value;
-                            songs[songIndex].tone = document.getElementById('song-tone').value;
-                            songs[songIndex].chords = document.getElementById('song-chords').value;
-                            saveData(); // Salva após editar
-                            renderView(songDetailsView(songs[songIndex]));
-                        }
-                    } else {
-                        const newSong = {
-                            id: nextSongId++,
-                            name: document.getElementById('song-name').value,
-                            artist: document.getElementById('song-artist').value,
-                            tone: document.getElementById('song-tone').value,
-                            chords: document.getElementById('song-chords').value,
-                            status: 'Nova'
-                        };
-                        songs.push(newSong);
-                        saveData(); // Salva após adicionar
-                        renderView(repertorioView);
-                    }
-                });
-            };
-        }
-
-        function openAddToSetlistModal(song) {
-            const modal = document.createElement('div');
-            modal.className = 'modal-backdrop';
-            
-            let setlistsHTML = '';
-            if (setlists.length === 0) {
-                setlistsHTML = '<p class="empty-state">Voce ainda nao tem setlists.</p>';
-            } else {
-                setlistsHTML = '<ul class="modal-list">';
-                setlists.forEach(function(setlist) {
-                    const hasSong = setlist.songIds.includes(song.id);
-                    setlistsHTML += '<li class="modal-list-item" data-setlist-id="' + setlist.id + '"><h4>' + setlist.name + ' ' + (hasSong ? '✓' : '') + '</h4><p>' + setlist.songIds.length + ' musica(s)</p></li>';
-                });
-                setlistsHTML += '</ul>';
-            }
-
-            modal.innerHTML = '<div class="modal-content"><h3>Adicionar a Setlist</h3>' + setlistsHTML + '<div class="modal-buttons"><button class="modal-cancel">Cancelar</button><button class="modal-create">Novo Setlist</button></div></div>';
-
-            document.body.appendChild(modal);
-
-            modal.querySelector('.modal-cancel').addEventListener('click', function() {
-                document.body.removeChild(modal);
-            });
-
-            modal.querySelector('.modal-create').addEventListener('click', function() {
-                document.body.removeChild(modal);
-                renderView(createSetlistFormView(song));
-            });
-
-            modal.querySelectorAll('.modal-list-item').forEach(function(item) {
-                item.addEventListener('click', function() {
-                    const setlistId = Number(item.dataset.setlistId);
-                    const setlist = setlists.find(function(s) { return s.id === setlistId; });
-                    
-                    if (setlist.songIds.includes(song.id)) {
-                        setlist.songIds = setlist.songIds.filter(function(id) { return id !== song.id; });
-                    } else {
-                        setlist.songIds.push(song.id);
-                    }
-                    saveData(); // Salva após modificar setlist
-                    document.body.removeChild(modal);
-                });
-            });
-
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    document.body.removeChild(modal);
-                }
-            });
-        }
-
-        function createSetlistFormView(songToAdd) {
-            return function(container) {
-                addButton.classList.add('hidden');
-                
-                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Cancelar</span></button></div><form class="add-form"><h2>Criar Setlist</h2><input type="text" id="setlist-name" placeholder="Nome do Setlist" required><div class="form-buttons"><button type="submit" class="save-button">Criar Setlist</button></div></form></div>';
-
-                container.querySelector('.back-button' ).addEventListener('click', function() {
-                    renderView(songToAdd ? songDetailsView(songToAdd) : setlistsView);
-                });
-
-                container.querySelector('form').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const newSetlist = {
-                        id: nextSetlistId++,
-                        name: document.getElementById('setlist-name').value,
-                        songIds: songToAdd ? [songToAdd.id] : []
-                    };
-                    setlists.push(newSetlist);
-                    saveData(); // Salva após criar setlist
-                    renderView(setlistDetailsView(newSetlist));
-                });
-            };
-        }
-
-        function setlistDetailsView(setlist) {
-            return function(container) {
-                addButton.classList.add('hidden');
-                
-                const setlistSongs = setlist.songIds
-                    .map(function(id) { return songs.find(function(s) { return s.id === id; }); })
-                    .filter(function(s) { return s !== undefined; });
-
-                let songsHTML = '';
-                if (setlistSongs.length === 0) {
-                    songsHTML = '<p class="empty-state">Nenhuma musica neste setlist.</p>';
-                } else {
-                    setlistSongs.forEach(function(song) {
-                        songsHTML += '<div class="song-card" data-song-id="' + song.id + '"><div class="song-info"><h3>' + song.name + '</h3><p>' + song.artist + '</p></div></div>';
-                    });
-                }
-
-                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Setlists</span></button></div><div class="song-details"><h2>' + setlist.name + '</h2><p>' + setlistSongs.length + ' musica(s )</p><div class="setlist-actions">' + (setlistSongs.length > 0 ? '<button class="setlist-action-button play-button">▶ Modo Palco</button>' : '') + '<button class="setlist-action-button edit-setlist-button">Editar</button></div></div><div class="list-container">' + songsHTML + '</div></div>';
-
-                container.querySelector('.back-button').addEventListener('click', function() { renderView(setlistsView); });
-                
-                const playButton = container.querySelector('.play-button');
-                if (playButton) {
-                    playButton.addEventListener('click', function() { openStageMode(setlist, setlistSongs); });
-                }
-
-                container.querySelector('.edit-setlist-button').addEventListener('click', function() {
-                    renderView(editSetlistFormView(setlist));
-                });
-                
-                container.querySelectorAll('.song-card').forEach(function(card) {
-                    card.addEventListener('click', function() {
-                        const songId = Number(card.dataset.songId);
-                        const song = songs.find(function(s) { return s.id === songId; });
-                        if (song) {
-                            renderView(songDetailsView(song));
-                        }
-                    });
-                });
-            };
-        }
-
-        function editSetlistFormView(setlist) {
-            return function(container) {
-                addButton.classList.add('hidden');
-                
-                container.innerHTML = '<div class="view"><div class="details-header"><button class="back-button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Cancelar</span></button></div><form class="add-form"><h2>Editar Setlist</h2><input type="text" id="setlist-name" placeholder="Nome do Setlist" value="' + setlist.name + '" required><div class="form-buttons"><button type="submit" class="save-button">Salvar Alteracoes</button><button type="button" class="delete-button">Apagar Setlist</button></div></form></div>';
-
-                container.querySelector('.back-button' ).addEventListener('click', function() {
-                    renderView(setlistDetailsView(setlist));
-                });
-
-                container.querySelector('.delete-button').addEventListener('click', function() {
-                    if (confirm('Tem certeza que quer apagar "' + setlist.name + '"?')) {
-                        setlists = setlists.filter(function(s) { return s.id !== setlist.id; });
-                        saveData(); // Salva após apagar setlist
-                        renderView(setlistsView);
-                    }
-                });
-
-                container.querySelector('form').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    setlist.name = document.getElementById('setlist-name').value;
-                    saveData(); // Salva após editar nome do setlist
-                    renderView(setlistDetailsView(setlist));
-                });
-            };
-        }
-
-        function openStageMode(setlist, setlistSongs) {
-            let currentIndex = 0;
-
-            function renderStage() {
-                const currentSong = setlistSongs[currentIndex];
-                const stageView = document.createElement('div');
-                stageView.className = 'stage-view';
-
-                stageView.innerHTML = '<div class="stage-header"><div class="stage-header-info"><h3>' + currentSong.name + '</h3><p>' + currentSong.artist + ' - ' + currentSong.tone + '</p></div><button class="stage-exit">✕ Sair</button></div><pre class="stage-chords">' + currentSong.chords + '</pre><div class="stage-counter">' + (currentIndex + 1) + ' / ' + setlistSongs.length + '</div>' + (currentIndex > 0 ? '<button class="stage-nav prev">‹</button>' : '') + (currentIndex < setlistSongs.length - 1 ? '<button class="stage-nav next">›</button>' : '');
-
-                document.body.appendChild(stageView);
-
-                stageView.querySelector('.stage-exit').addEventListener('click', function() {
-                    document.body.removeChild(stageView);
-                });
-
-                const prevButton = stageView.querySelector('.stage-nav.prev');
-                if (prevButton) {
-                    prevButton.addEventListener('click', function() {
-                        document.body.removeChild(stageView);
-                        currentIndex--;
-                        renderStage();
-                    });
-                }
-
-                const nextButton = stageView.querySelector('.stage-nav.next');
-                if (nextButton) {
-                    nextButton.addEventListener('click', function() {
-                        document.body.removeChild(stageView);
-currentIndex++;
-                        renderStage();
-                    });
-                }
-
-                function handleKeyPress(e) {
-                    if (e.key === 'ArrowLeft' && currentIndex > 0) {
-                        document.body.removeChild(stageView);
-                        currentIndex--;
-                        renderStage();
-                    } else if (e.key === 'ArrowRight' && currentIndex < setlistSongs.length - 1) {
-                        document.body.removeChild(stageView);
-                        currentIndex++;
-                        renderStage();
-                    } else if (e.key === 'Escape') {
-                        document.body.removeChild(stageView);
-                        document.removeEventListener('keydown', handleKeyPress);
-                    }
-                }
-
-                document.addEventListener('keydown', handleKeyPress);
-            }
-
-            renderStage();
-        }
-
-        viewRepertorioButton.addEventListener('click', function() { renderView(repertorioView); });
-        viewSetlistsButton.addEventListener('click', function() { renderView(setlistsView); });
-        addButton.addEventListener('click', function() {
-            if (viewSetlistsButton.classList.contains('active')) {
-                renderView(createSetlistFormView());
-            } else {
-                renderView(addSongFormView());
-            }
-        });
-
-        renderView(repertorioView);
-    </script>
-
-</body>
-</html> 
+/* ---------- boot ---------- */
+function paintWho(){document.getElementById("whoName").textContent=S.config.nome||"Configure o MEI";
+  document.getElementById("whoCnpj").textContent=S.config.cnpj||"";}
+function draw(){
+  if(current==="atend")drawAtend();
+  else if(current==="ordens")drawOrdens();
+  else if(current==="ferr")drawFerr();
+  else if(current==="cfg")drawCfg();
+}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>nav(b.dataset.t));
+(async()=>{await load();paintWho();
+  if(!S.config.nome){current="cfg";document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t==="cfg"));}
+  draw();})();
+</script>
