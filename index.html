@@ -235,7 +235,16 @@
   .doc .prod{font-size:12px;line-height:1.6}
   .doc .foot{margin-top:14px;display:flex;justify-content:space-between;font-size:11px}
   .doc .sign{margin-top:26px;border-top:1px solid #000;width:7cm;text-align:center;font-size:10px;padding-top:3px}
-  @media print{ .app,.savebar,.nav,#toast{display:none!important} #printDoc{display:block} @page{margin:1cm} }
+  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block} @page{margin:1cm} }
+  /* login */
+  .login{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
+  .login[hidden]{display:none}
+  .loginbox{max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .loginbox .mk{width:64px;height:64px;border-radius:50%;background:var(--acc-bg);display:flex;align-items:center;justify-content:center;color:var(--acc-d);margin-bottom:10px}
+  .loginbox h1{font-size:28px;font-weight:600;letter-spacing:-.02em;margin:0}
+  .loginbox p{color:var(--mut);font-size:14px;margin:0 0 22px}
+  .loginbox .btn{width:100%}
+  .loginbox .fine{font-size:11.5px;color:var(--dim);margin-top:14px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -266,24 +275,60 @@
 <div id="rxModal" class="modal" hidden></div>
 <div id="toast"></div>
 
+<div id="login" class="login" hidden>
+  <div class="loginbox">
+    <span class="mk"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+    <h1>Órbita</h1>
+    <p>Atendimento óptico domiciliar</p>
+    <button id="loginBtn" class="btn pri">Entrar com Google</button>
+    <span class="fine">Seus dados ficam na sua conta, privados. Só você acessa.</span>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+
 <script>
-const KEY="orbita_optica_os_v1";
+// === Firebase (projeto Órbita) — COLE SUA CONFIG DO CONSOLE ===
+const firebaseConfig = {
+  apiKey: "COLE_AQUI",
+  authDomain: "orbita-xxxx.firebaseapp.com",
+  projectId: "orbita-xxxx",
+  storageBucket: "orbita-xxxx.appspot.com",
+  messagingSenderId: "COLE_AQUI",
+  appId: "COLE_AQUI"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); // offline nas visitas
+let user = null;
+
 const TIPOS=["visão simples","multifocal","bifocal"];
 const INDICES=["resina 1.50","resina 1.56","policarbonato","trivex","resina 1.61","resina 1.67","resina 1.74","cristal"];
 const TRATAM=["AR","fotossensível","blue light","hidrofóbico","UV"];
 const STATUS=[["enviado","enviado ao lab"],["confeccao","em confecção"],["pronto","pronto"],["entregue","entregue"]];
 const IC={save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7M8 20v-6h8v6"/></svg>',
   print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V4h12v5M6 18H4v-6a2 2 0 012-2h12a2 2 0 012 2v6h-2M8 14h8v6H8z"/></svg>'};
-let S=null, editingId=null, current="atend", mem=null, form=null;
+let S=null, editingId=null, current="atend", form=null;
 
-/* persistence */
-function writeStore(o){try{localStorage.setItem(KEY,JSON.stringify(o));mem=null;}catch(e){mem=o;}}
-function readStore(){try{const s=localStorage.getItem(KEY);if(s)return JSON.parse(s);}catch(e){}return mem;}
-function defaults(){return{config:{nome:"",cnpj:""},clientes:[],ordens:[],counters:{global:1,local:1}};}
-function loadState(){S=readStore();if(!S||typeof S!=="object")S=defaults();
-  S.config=Object.assign({nome:"",cnpj:""},S.config||{});S.clientes=S.clientes||[];S.ordens=S.ordens||[];
-  S.counters=Object.assign({global:1,local:1},S.counters||{});}
-function persist(){writeStore(S);}
+/* --- camada de dados: único ponto que conhece o Firestore --- */
+function defaults(){return{config:{nome:"",cnpj:""},clientes:[],ordens:[],counters:{local:1}};}
+function docBase(){return db.collection("consultores").doc(user.uid);}
+async function repoLoadAll(){
+  const base=docBase(), cfg=await base.get();
+  if(cfg.exists){const d=cfg.data();S={config:d.config||{},counters:d.counters||{local:1},clientes:[],ordens:[]};}
+  else{S=defaults();S.config.nome=user.displayName||"";await base.set({config:S.config,counters:S.counters});}
+  S.config=Object.assign({nome:"",cnpj:""},S.config);S.counters=Object.assign({local:1},S.counters);
+  const cs=await base.collection("clientes").get();S.clientes=cs.docs.map(x=>x.data());
+  const os=await base.collection("ordens").get();S.ordens=os.docs.map(x=>x.data());
+}
+function saveConsultor(){return docBase().set({config:S.config,counters:S.counters},{merge:true}).catch(e=>console.error("consultor",e));}
+function saveCliente(c){return docBase().collection("clientes").doc(c.id).set(c).catch(e=>console.error("cliente",e));}
+function saveOrdemDoc(o){return docBase().collection("ordens").doc(o.id).set(o).catch(e=>console.error("ordem",e));}
+function deleteOrdemDoc(id){return docBase().collection("ordens").doc(id).delete().catch(e=>console.error("del",e));}
+
 function uid(){return Math.random().toString(36).slice(2,9);}
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000);}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
@@ -400,7 +445,7 @@ function drawAtend(){
   const editing=!!editingId;
   document.getElementById("view").innerHTML=`
   <div class="ptitle"><h1>${editing?"Editar atendimento":"Novo atendimento"}</h1>
-    <span class="meta">${editing?fmtG(S.ordens.find(o=>o.id===editingId).osGlobal):brShort(today())}</span></div>
+    <span class="meta">${editing?fmtG(S.ordens.find(o=>o.id===editingId).num):brShort(today())}</span></div>
 
   <div class="card">
     <div class="shead"><span class="n">01</span><span class="bar"></span><h2>Cliente</h2></div>
@@ -519,33 +564,34 @@ function saveOrdem(printAfter){
     ordem.clienteId=cli.id;ordem.receita=form.rx;ordem.medidas=form.medidas;
     ordem.produto={armacao:form.produto.armacao,tipo:form.produto.tipo,indice:form.produto.indice,tratam:form.produto.tratam,obs:form.produto.obs};
     ordem.valor=form.valor;toast("Pedido atualizado.");
-  }else{ordem={id:uid(),osGlobal:S.counters.global,osLocal:S.counters.local,clienteId:cli.id,data:today(),
+  }else{ordem={id:uid(),num:S.counters.local,clienteId:cli.id,data:today(),
       receita:form.rx,medidas:form.medidas,
       produto:{armacao:form.produto.armacao,tipo:form.produto.tipo,indice:form.produto.indice,tratam:form.produto.tratam,obs:form.produto.obs},
       valor:form.valor,status:form.status,consent:{aceito:true,data:new Date().toISOString()}};
-    S.ordens.push(ordem);S.counters.global++;S.counters.local++;toast(fmtG(ordem.osGlobal)+" criada.");}
-  persist();const savedId=ordem.id;editingId=null;form=newForm();
+    S.ordens.push(ordem);S.counters.local++;toast(fmtG(ordem.num)+" criada.");}
+  saveCliente(cli);saveOrdemDoc(ordem);saveConsultor();
+  const savedId=ordem.id;editingId=null;form=newForm();
   if(printAfter)printOrdem(savedId,"os");nav("ordens");}
 
 /* ordens */
 function drawOrdens(){
-  const list=[...S.ordens].sort((a,b)=>b.osGlobal-a.osGlobal);
+  const list=[...S.ordens].sort((a,b)=>b.num-a.num);
   document.getElementById("view").innerHTML=`<div class="ptitle"><h1>Ordens</h1><span class="meta">${S.ordens.length} pedido${S.ordens.length!==1?"s":""}</span></div>
     <label class="field search"><span class="flab">Buscar</span><input id="ordSearch" placeholder="Cliente ou número"></label><div class="ordens" id="ordList"></div>`;
   const render=(q="")=>{const box=document.getElementById("ordList");
-    const f=list.filter(o=>{const c=S.clientes.find(x=>x.id===o.clienteId)||{};return (c.nome+" "+fmtG(o.osGlobal)+" #"+o.osLocal).toLowerCase().includes(q.toLowerCase());});
+    const f=list.filter(o=>{const c=S.clientes.find(x=>x.id===o.clienteId)||{};return (c.nome+" "+fmtG(o.num)+" #"+o.num).toLowerCase().includes(q.toLowerCase());});
     if(!f.length){box.innerHTML='<div class="empty">Nenhuma ordem ainda.<br>Comece um atendimento.</div>';return;}
     box.innerHTML="";
     f.forEach(o=>{const c=S.clientes.find(x=>x.id===o.clienteId)||{nome:"—"};const el=document.createElement("div");el.className="ord";
-      el.innerHTML=`<div class="id">${fmtG(o.osGlobal)} <span class="loc">· sua #${o.osLocal}</span></div>
+      el.innerHTML=`<div class="id">${fmtG(o.num)} <span class="loc">· sua #${o.num}</span></div>
         <div class="nm">${esc(c.nome)}</div><div class="meta">${brDate(o.data)} · ${esc(o.produto.tipo||"lente")} ${esc(o.produto.indice||"")}</div>
         <div class="ctrl"><select class="status" data-s="${o.status}">${STATUS.map(([k,l])=>`<option value="${k}" ${o.status===k?"selected":""}>${l}</option>`).join("")}</select>
           <button class="icobtn" data-a="os">OS</button><button class="icobtn" data-a="recibo">recibo</button>
           <button class="icobtn" data-a="edit">editar</button><button class="icobtn del" data-a="del">excluir</button></div>`;
-      el.querySelector(".status").addEventListener("change",e=>{o.status=e.target.value;e.target.dataset.s=e.target.value;persist();});
+      el.querySelector(".status").addEventListener("change",e=>{o.status=e.target.value;e.target.dataset.s=e.target.value;saveOrdemDoc(o);});
       el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=b.dataset.a;
         if(a==="os")printOrdem(o.id,"os");else if(a==="recibo")printOrdem(o.id,"recibo");else if(a==="edit")loadOrdemToForm(o);
-        else if(a==="del"){if(confirm("Excluir "+fmtG(o.osGlobal)+"?")){S.ordens=S.ordens.filter(x=>x.id!==o.id);persist();drawOrdens();}}});
+        else if(a==="del"){if(confirm("Excluir "+fmtG(o.num)+"?")){S.ordens=S.ordens.filter(x=>x.id!==o.id);deleteOrdemDoc(o.id);drawOrdens();}}});
       box.appendChild(el);});};
   render();document.getElementById("ordSearch").addEventListener("input",e=>render(e.target.value));}
 
@@ -569,14 +615,17 @@ function drawCfg(){document.getElementById("view").innerHTML=`<div class="ptitle
     <p class="hint">Aparecem na OS como identificação formal. O cliente do laboratório é você.</p>
     <div class="fgrid f2"><label class="field"><span class="flab">Nome / razão</span><input id="c_nome" value="${esc(S.config.nome)}"></label>
       <label class="field"><span class="flab">CNPJ</span><input id="c_cnpj" value="${esc(S.config.cnpj)}" placeholder="00.000.000/0001-00"></label></div></div>
-  <div class="card"><div class="shead"><span class="n">02</span><span class="bar"></span><h2>Numeração local</h2></div>
+  <div class="card"><div class="shead"><span class="n">02</span><span class="bar"></span><h2>Numeração</h2></div>
     <p class="hint">Sua contagem pessoal. A próxima OS será a #${S.counters.local}.</p>
-    <label class="field" style="max-width:200px"><span class="flab">Próxima OS local (#)</span><input id="c_local" value="${S.counters.local}" inputmode="numeric"></label>
-    <div style="margin-top:14px"><button class="btn sec" id="c_save" style="max-width:220px">Salvar ajustes</button></div>
-    <p class="lgpd-note">Dados no navegador (localStorage), locais por aparelho. Sincronizar entre celulares/consultores é o próximo passo (Firebase) — a estrutura já está no formato para migrar.</p></div>`;
+    <label class="field" style="max-width:200px"><span class="flab">Próxima OS (#)</span><input id="c_local" value="${S.counters.local}" inputmode="numeric"></label>
+    <div style="margin-top:14px"><button class="btn sec" id="c_save" style="max-width:220px">Salvar ajustes</button></div></div>
+  <div class="card"><div class="shead"><span class="n">03</span><span class="bar"></span><h2>Conta</h2></div>
+    <p class="hint">Conectado como ${esc((user&&user.email)||"—")}. Dados na nuvem (Firestore · São Paulo), sincronizados entre seus aparelhos.</p>
+    <button class="btn ghost" id="c_out" style="justify-content:flex-start;padding-left:0">Sair da conta</button></div>`;
   document.getElementById("c_save").onclick=()=>{S.config.nome=document.getElementById("c_nome").value.trim();
     S.config.cnpj=document.getElementById("c_cnpj").value.trim();const l=parseInt(document.getElementById("c_local").value);if(l>0)S.counters.local=l;
-    persist();paintWho();toast("Ajustes salvos.");};}
+    saveConsultor();paintWho();toast("Ajustes salvos.");};
+  document.getElementById("c_out").onclick=()=>auth.signOut();}
 
 /* print (sem telefone/endereço) */
 function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;const c=S.clientes.find(x=>x.id===o.clienteId)||{};
@@ -587,7 +636,7 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
   const medidas=`DNP OD ${o.medidas.dnpOD||"—"} / OE ${o.medidas.dnpOE||"—"} mm · Altura OD ${o.medidas.altOD||"—"} / OE ${o.medidas.altOE||"—"} mm`;
   document.getElementById("printDoc").innerHTML=`<div class="doc"><div class="dh">
      <div class="cnpj"><small>CNPJ MEI</small>${esc(S.config.cnpj||"—")}<div style="font-size:11px;font-weight:400">${esc(S.config.nome||"")}</div></div>
-     <div class="nums"><small>${title}</small><b>${fmtG(o.osGlobal)}</b><br>sua ref. #${o.osLocal}<br>${brDate(o.data)}</div></div>
+     <div class="nums"><small>${title}</small><b>${fmtG(o.num)}</b><br>sua ref. #${o.num}<br>${brDate(o.data)}</div></div>
      <h3>Cliente</h3><div class="cli"><b>${esc(c.nome)}</b></div>
      <h3>Receita</h3><table class="rxp"><thead><tr><th></th><th>Esf.</th><th>Cil.</th><th>Eixo</th><th>Adição</th></tr></thead><tbody>${rxRow("OD")}${rxRow("OE")}</tbody></table>
      <div class="cli" style="margin-top:5px;font-size:11px">${medidas}</div>
@@ -602,9 +651,17 @@ function paintWho(){document.getElementById("whoName").textContent=S.config.nome
   document.getElementById("whoAv").textContent=initials(S.config.nome);}
 function draw(){if(current==="atend")drawAtend();else if(current==="ordens")drawOrdens();else if(current==="ferr")drawFerr();else if(current==="cfg")drawCfg();}
 document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>nav(b.dataset.t));
-loadState();paintWho();document.body.classList.add("atend");
-if(!S.config.nome){current="cfg";document.body.classList.remove("atend");document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t==="cfg"));}
-draw();
+
+function showLogin(){document.getElementById("app").style.display="none";document.getElementById("nav").style.display="none";document.getElementById("login").hidden=false;}
+async function startApp(){
+  document.getElementById("login").hidden=true;document.getElementById("app").style.display="";document.getElementById("nav").style.display="";
+  try{await repoLoadAll();}catch(e){console.error(e);toast("Erro ao carregar. Verifique a conexão.");S=defaults();}
+  paintWho();current="atend";document.body.classList.add("atend");
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t==="atend"));
+  draw();
+}
+auth.onAuthStateChanged(u=>{if(u){user=u;startApp();}else{user=null;showLogin();}});
+document.getElementById("loginBtn").onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{console.error(e);toast("Falha no login.");});
 </script>
 </body>
 </html>
