@@ -1,501 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atendimento &amp; OS — MVP óptica domiciliar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Órbita — Atendimento &amp; OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f3f5f4; --surf:#ffffff; --surf2:#f8faf9;
-    --ink:#1a1e22; --mut:#697076; --dim:#98a0a5; --line:#e3e7e5;
-    --acc:#0e7c6b; --acc-d:#0a5d50; --acc-bg:#e5f1ee;
+    --bg:#f4f5f2; --surf:#ffffff; --surf2:#f8faf8;
+    --ink:#1b2430; --mut:#79828b; --dim:#aab0b5; --line:#e6e9e5;
+    --acc:#0f7d6e; --acc-d:#0a5d51; --acc-bg:#dcede9; --acc-tint:#eef6f4;
     --err:#b84a3d; --err-bg:#fbeceb;
     --blue:#2b6cb0; --amber:#b7791f; --gray:#727b82;
-    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
-    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --r:20px; --rf:15px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;letter-spacing:-.005em}
+  body.atend{--pb:150px} body{--pb:88px}
   #printDoc{display:none}
-  .app{max-width:920px;margin:0 auto;padding:0 18px 70px}
-  /* topbar */
-  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:16px 0 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
-  .brand{display:flex;flex-direction:column}
-  .brand .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc)}
-  .brand h1{font-size:17px;font-weight:600;margin:1px 0 0;letter-spacing:-.01em}
-  .who{font-size:12px;color:var(--mut);text-align:right}
-  .who b{color:var(--ink);font-weight:600}
-  .tabs{display:flex;gap:2px;margin:14px 0 22px;background:var(--surf);border:1px solid var(--line);border-radius:11px;padding:4px}
-  .tabs button{flex:1;background:none;border:none;padding:9px 8px;border-radius:8px;font-family:var(--sans);
-    font-size:13px;font-weight:500;color:var(--mut);cursor:pointer}
-  .tabs button.on{background:var(--acc);color:#fff}
+  .app{max-width:720px;margin:0 auto;padding:0 15px calc(var(--pb) + env(safe-area-inset-bottom))}
+
+  /* header */
+  .head{position:sticky;top:0;z-index:6;background:var(--bg);padding-top:env(safe-area-inset-top)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 2px 12px}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo .mk{width:38px;height:38px;border-radius:50%;background:var(--acc-bg);display:flex;align-items:center;justify-content:center;color:var(--acc-d)}
+  .logo b{font-size:19px;font-weight:600;letter-spacing:-.02em}
+  .who{display:flex;align-items:center;gap:10px}
+  .who .id{text-align:right;line-height:1.25}
+  .who .id b{font-size:13px;font-weight:600;display:block}
+  .who .id span{font-size:11px;color:var(--mut)}
+  .who .av{width:38px;height:38px;border-radius:50%;background:var(--acc-bg);color:var(--acc-d);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none}
+
+  /* page title (atend) */
+  .ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:6px 2px 18px}
+  .ptitle h1{font-size:27px;font-weight:600;letter-spacing:-.02em;margin:0}
+  .ptitle .meta{font-family:var(--mono);font-size:13px;color:var(--mut);white-space:nowrap;flex:none}
+
   /* cards */
-  .card{background:var(--surf);border:1px solid var(--line);border-radius:13px;padding:18px 20px;margin-bottom:14px}
-  .card h2{font-size:14px;font-weight:600;margin:0 0 3px}
-  .card .hint{font-size:12px;color:var(--mut);margin:0 0 15px}
-  .grid{display:grid;gap:12px}
-  .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:1fr 1fr 1fr}
-  @media(max-width:620px){.g2,.g3{grid-template-columns:1fr}}
-  label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mut);font-weight:500}
-  input,select,textarea{background:var(--surf2);border:1px solid var(--line);color:var(--ink);
-    border-radius:8px;padding:9px 11px;font-size:14px;font-family:var(--sans);width:100%}
-  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);background:#fff}
-  input.num{font-family:var(--mono);text-align:center}
-  input.bad{border-color:var(--err);background:var(--err-bg)}
-  .fe{font-size:11px;color:var(--err);min-height:0}
-  /* receita table */
-  .rx{border:1px solid var(--line);border-radius:10px;overflow:hidden}
-  .rx table{width:100%;border-collapse:collapse}
-  .rx th,.rx td{padding:0;text-align:center}
-  .rx thead th{background:var(--surf2);font-size:11px;font-weight:600;color:var(--mut);
-    text-transform:uppercase;letter-spacing:.05em;padding:9px 4px;border-bottom:1px solid var(--line)}
-  .rx tbody th{background:var(--surf2);width:52px;font-family:var(--mono);font-size:13px;color:var(--acc-d);
-    border-right:1px solid var(--line);font-weight:600}
-  .rx td{border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
-  .rx td:last-child,.rx th:last-child{border-right:none}
-  .rx tbody tr:last-child td,.rx tbody tr:last-child th{border-bottom:none}
-  .rx input{border:none;border-radius:0;background:transparent;text-align:center;font-family:var(--mono);padding:11px 4px}
-  .rx input:focus{background:var(--acc-bg)}
-  .rx input.bad{background:var(--err-bg)}
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;
+    box-shadow:0 1px 2px rgba(20,30,25,.03)}
+  .shead{display:flex;align-items:center;gap:11px;margin-bottom:15px}
+  .shead .n{font-family:var(--mono);font-size:12px;color:var(--dim);font-weight:500}
+  .shead .bar{width:1px;height:15px;background:var(--line)}
+  .shead h2{font-size:16px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .shead .eye{margin-left:auto;color:var(--acc);display:flex}
+  .hint{font-size:12.5px;color:var(--mut);margin:-6px 0 14px}
+
+  /* fields */
+  .fgrid{display:grid;gap:11px}
+  @media(min-width:540px){.f2{grid-template-columns:1fr 1fr}}
+  .field{border:1px solid var(--line);border-radius:var(--rf);background:#fff;padding:9px 14px;
+    display:flex;flex-direction:column;gap:1px;position:relative}
+  .field:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-tint)}
+  .field .flab{font-size:12px;color:var(--mut);font-weight:500}
+  .field input,.field select,.field textarea{border:none;background:transparent;padding:0;width:100%;
+    font-size:16px;font-weight:500;color:var(--ink);font-family:var(--sans);min-height:26px}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none}
+  .field.sel::after{content:"";position:absolute;right:15px;top:50%;width:9px;height:9px;
+    border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+  .field select{appearance:none;-webkit-appearance:none;padding-right:20px}
+  .fe{font-size:12px;color:var(--err);margin:8px 2px 0;min-height:0}
+
+  /* badges */
+  .badge{width:44px;height:44px;border-radius:50%;background:var(--acc-bg);color:var(--acc-d);
+    font-family:var(--mono);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+
+  /* RECEITA — instrument readout */
+  .rxcard{position:relative;border:1px solid #cfe4df;border-radius:var(--rf);background:var(--acc-tint);overflow:hidden}
+  .rxbg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.9}
+  .rxgrid{position:relative;padding:8px 12px 0}
+  .rxr{display:grid;grid-template-columns:44px 1fr 1fr .8fr 1fr;align-items:center;gap:4px}
+  .rxhead{padding:10px 0 8px;border-bottom:1px solid #d6e7e2}
+  .rxhead span{text-align:right;padding-right:12px;font-size:11px;color:var(--mut);font-weight:500}
+  .rxhead span:first-child{padding-right:0}
+  .rxhead span i{display:block;font-family:var(--mono);font-size:10px;color:var(--dim);font-style:normal;margin-top:1px}
+  .rxrow{border-bottom:1px solid #d6e7e2}
+  .rxrow .badge{margin:8px 0}
+  .rxrow input{border:none;background:transparent;text-align:center;font-family:var(--mono);font-size:19px;
+    font-weight:500;color:var(--ink);width:100%;padding:16px 0;min-height:56px;letter-spacing:-.02em}
+  .rxrow input:focus{outline:none;background:rgba(255,255,255,.6);border-radius:8px}
+  .rxrow input.bad{background:var(--err-bg);border-radius:8px}
+  .scell{display:flex;align-items:center;justify-content:center;padding:8px 0;min-height:56px;border-radius:8px}
+  .scell:focus-within{background:rgba(255,255,255,.6)}
+  .scell.bad{background:var(--err-bg)}
+  .scell .sgn{border:none;background:transparent;font-family:var(--mono);font-size:20px;font-weight:600;
+    color:var(--acc-d);cursor:pointer;padding:8px 3px 8px 0;line-height:1;-webkit-tap-highlight-color:transparent}
+  .scell .sgn:active{opacity:.5}
+  .scell .mag{border:none!important;background:transparent;text-align:left;font-family:var(--mono);font-size:19px;
+    font-weight:500;color:var(--ink);width:54px;padding:0!important;min-height:auto!important;letter-spacing:-.02em}
+  .scell .mag:focus{background:transparent!important}
+  /* tappable display cells */
+  .rxcell{border:none;background:transparent;font-family:var(--mono);font-size:19px;font-weight:500;color:var(--ink);
+    padding:16px 12px 16px 2px;min-height:56px;cursor:pointer;text-align:right;letter-spacing:-.02em;border-radius:8px;-webkit-tap-highlight-color:transparent}
+  .rxcell:active{background:rgba(255,255,255,.65)}
+  .rxcell.bad{background:var(--err-bg)}
+  .rxcell .ph{color:var(--dim);font-weight:400}
+  /* input modal */
+  .modal{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--bg)}
+  .modal[hidden]{display:none}
+  .mhd{display:flex;align-items:center;justify-content:space-between;padding:calc(13px + env(safe-area-inset-top)) 16px 12px;border-bottom:1px solid var(--line);background:var(--surf)}
+  .mhd h3{margin:0;font-size:17px;font-weight:600}
+  .mhd h3 span{color:var(--acc-d)}
+  .mhd .x{background:none;border:none;font-size:26px;color:var(--mut);cursor:pointer;padding:2px 8px;line-height:1}
+  .mbody{flex:1;overflow-y:auto;padding:16px;max-width:520px;margin:0 auto;width:100%}
+  .mtabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+  .mtab{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 3px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .mtab .l{font-size:10.5px;color:var(--mut);display:block;margin-bottom:3px}
+  .mtab .v{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--ink)}
+  .mtab .v.ph{color:var(--dim);font-weight:400}
+  .mtab.on{border-color:var(--acc);background:var(--acc-tint)}
+  .mbig{background:var(--acc-tint);border:1px solid #cfe4df;border-radius:16px;padding:20px;text-align:center;margin-bottom:6px}
+  .mbig .cur{font-family:var(--mono);font-size:46px;font-weight:600;color:var(--ink);letter-spacing:-.02em;line-height:1.1;min-height:50px}
+  .mbig .lab{font-size:12px;color:var(--mut);margin-top:6px}
+  .mwarn{color:var(--err);font-size:12.5px;text-align:center;min-height:18px;margin:7px 0 0}
+  .steps{display:flex;gap:10px;margin:14px 0 12px}
+  .steps button{flex:1;border:1px solid var(--line);background:#fff;border-radius:13px;min-height:54px;font-family:var(--mono);
+    font-size:15px;font-weight:600;color:var(--acc-d);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .steps button:active{background:var(--acc-tint)}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pad button{border:1px solid var(--line);background:#fff;border-radius:14px;min-height:62px;font-family:var(--mono);
+    font-size:24px;font-weight:500;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pad button:active{background:var(--surf2)}
+  .pad button.sm{font-size:18px;color:var(--acc-d)}
+  .pad button[disabled]{opacity:.28;pointer-events:none}
+  .mftr{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surf)}
+  .mftr .in{max-width:520px;margin:0 auto}
+  .mnav{display:flex;gap:10px;margin-bottom:10px}
+  .mnav button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;min-height:46px;font-weight:600;color:var(--ink);cursor:pointer;font-size:14px;font-family:var(--sans)}
+  .mnav button[disabled]{opacity:.4;pointer-events:none}
+  .mftr .btn{width:100%}
+  .rxfoot{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;
+    font-family:var(--mono);font-size:11px;color:var(--mut)}
+
+  /* MEDIÇÕES */
+  .mtable{border:1px solid var(--line);border-radius:var(--rf);overflow:hidden}
+  .mrow{display:grid;grid-template-columns:44px 1fr 1fr;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--line)}
+  .mhead{padding:11px 14px;color:var(--mut);font-size:11.5px;font-weight:500}
+  .mhead span:first-child{grid-column:1/2}
+  .mhead .h{text-align:right;padding-right:24px}
+  .mcell{display:flex;align-items:baseline;justify-content:flex-end;gap:5px;padding-right:6px}
+  .mcell input{border:none;background:transparent;text-align:right;font-family:var(--mono);font-size:18px;
+    font-weight:500;color:var(--ink);width:56px;padding:12px 0;min-height:48px}
+  .mcell input:focus{outline:none;background:var(--surf2);border-radius:8px}
+  .mcell .u{font-family:var(--mono);font-size:11px;color:var(--dim);width:18px;text-align:left}
+  .mtot{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;background:var(--surf2)}
+  .mtot .l{font-size:13px;color:var(--mut)} .mtot .v{font-family:var(--mono);font-size:16px;font-weight:600}
+
   /* chips */
-  .chips{display:flex;flex-wrap:wrap;gap:7px}
-  .chip{border:1px solid var(--line);background:var(--surf2);border-radius:20px;padding:6px 13px;
-    font-size:12px;color:var(--mut);cursor:pointer;user-select:none}
-  .chip.on{background:var(--acc-bg);border-color:var(--acc);color:var(--acc-d);font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:22px;padding:10px 16px;font-size:13.5px;
+    color:var(--mut);cursor:pointer;user-select:none;min-height:42px;display:flex;align-items:center;gap:6px;font-weight:500}
+  .chip.on{background:var(--acc-bg);border-color:transparent;color:var(--acc-d)}
+  .chip.on::before{content:"";width:14px;height:8px;border-left:2px solid var(--acc-d);border-bottom:2px solid var(--acc-d);
+    transform:rotate(-45deg) translateY(-2px);margin-right:1px}
+
   /* consent */
-  .consent{display:flex;gap:11px;align-items:flex-start;background:var(--acc-bg);
-    border:1px solid #cfe5e0;border-radius:10px;padding:13px 15px}
-  .consent input{width:18px;height:18px;margin-top:1px;flex:none;accent-color:var(--acc)}
-  .consent .t{font-size:12px;color:var(--acc-d);line-height:1.55}
-  /* actions */
-  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
-  .btn{border:none;border-radius:9px;padding:11px 20px;font-size:14px;font-weight:600;
-    cursor:pointer;font-family:var(--sans)}
-  .btn.pri{background:var(--acc);color:#fff}
-  .btn.pri:hover{background:var(--acc-d)}
-  .btn.sec{background:var(--surf);border:1px solid var(--line);color:var(--ink)}
-  .btn.sec:hover{border-color:var(--acc)}
-  .btn.ghost{background:none;border:none;color:var(--mut)}
-  /* ordens list */
-  .ordens{display:flex;flex-direction:column;gap:10px}
-  .ord{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
-    display:grid;grid-template-columns:1fr auto;gap:10px 14px;align-items:center}
-  .ord .id{font-family:var(--mono);font-size:12px;color:var(--acc-d)}
-  .ord .id .loc{color:var(--dim)}
-  .ord .nm{font-size:15px;font-weight:600;margin:2px 0 0}
-  .ord .meta{font-size:12px;color:var(--mut);margin:2px 0 0}
-  .ord .ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-  select.status{font-family:var(--mono);font-size:11px;font-weight:600;padding:6px 8px;width:auto;text-transform:uppercase}
+  .consent{display:flex;gap:12px;align-items:flex-start}
+  .consent input{width:24px;height:24px;min-height:24px;margin-top:1px;flex:none;accent-color:var(--acc);border-radius:6px}
+  .consent .t{font-size:13px;color:var(--ink);line-height:1.55}
+  .consent .t a{color:var(--acc-d);font-weight:500;display:inline-block;margin-top:6px}
+  .lgpd-note{font-size:11.5px;color:var(--dim);line-height:1.6;margin-top:12px}
+
+  /* buttons */
+  .btn{border:none;border-radius:var(--rf);padding:15px 18px;font-size:15px;font-weight:600;cursor:pointer;
+    font-family:var(--sans);min-height:54px;display:flex;align-items:center;justify-content:center;gap:9px}
+  .btn.pri{background:var(--acc);color:#fff} .btn.pri:active{background:var(--acc-d)}
+  .btn.sec{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn.ghost{background:none;border:none;color:var(--mut);font-weight:500;min-height:44px}
+  .btn svg{width:19px;height:19px}
+
+  /* save bar (atend only) */
+  .savebar{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));z-index:7;
+    background:var(--surf);border-top:1px solid var(--line);padding:11px 15px}
+  .savebar .w{max-width:720px;margin:0 auto;display:flex;gap:11px}
+  .savebar .btn{flex:1}
+
+  /* bottom nav */
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surf);border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom);display:flex}
+  .nav button{flex:1;background:none;border:none;padding:9px 4px 8px;display:flex;flex-direction:column;
+    align-items:center;gap:3px;color:var(--mut);cursor:pointer;font-family:var(--sans);font-size:11px;font-weight:500;min-height:60px}
+  .nav button svg{width:23px;height:23px}
+  .nav button.on{color:var(--acc)}
+
+  /* ordens */
+  .search{margin-bottom:13px}
+  .ordens{display:flex;flex-direction:column;gap:11px}
+  .ord{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:15px;box-shadow:0 1px 2px rgba(20,30,25,.03)}
+  .ord .id{font-family:var(--mono);font-size:12px;color:var(--acc-d)} .ord .id .loc{color:var(--dim)}
+  .ord .nm{font-size:16.5px;font-weight:600;margin:4px 0 0}
+  .ord .meta{font-size:12.5px;color:var(--mut);margin:2px 0 0}
+  .ord .ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:13px}
+  select.status{font-family:var(--mono);font-size:11px;font-weight:600;padding:9px 10px;width:auto;min-height:40px;
+    text-transform:uppercase;flex:1;min-width:132px;border:1px solid var(--line);border-radius:10px;background:var(--surf2);appearance:none}
   .status[data-s="enviado"]{color:var(--blue)} .status[data-s="confeccao"]{color:var(--amber)}
   .status[data-s="pronto"]{color:var(--acc)} .status[data-s="entregue"]{color:var(--gray)}
-  .icobtn{background:var(--surf2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;
-    font-size:12px;color:var(--mut);cursor:pointer;font-weight:500}
-  .icobtn:hover{border-color:var(--acc);color:var(--acc-d)}
-  .icobtn.del:hover{border-color:var(--err);color:var(--err)}
-  .empty{border:1px dashed var(--line);border-radius:12px;padding:32px;text-align:center;color:var(--mut);font-size:14px}
-  .search{margin-bottom:14px}
+  .icobtn{background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13px;
+    color:var(--mut);cursor:pointer;font-weight:500;min-height:40px}
+  .icobtn:active{border-color:var(--acc);color:var(--acc-d)} .icobtn.del{color:var(--err)}
+  .empty{border:1px dashed var(--line);border-radius:var(--r);padding:36px 18px;text-align:center;color:var(--mut);font-size:14px}
+
   /* transpose */
-  .tout{font-family:var(--mono);font-size:15px;background:var(--acc-bg);border:1px solid #cfe5e0;
-    border-radius:10px;padding:14px 16px;color:var(--acc-d);margin-top:14px;display:none}
+  .tout{font-family:var(--mono);font-size:15px;background:var(--acc-tint);border:1px solid #cfe4df;border-radius:var(--rf);
+    padding:15px;color:var(--acc-d);margin-top:15px;display:none;line-height:1.8}
   .tout.show{display:block} .tout b{color:var(--ink)}
+
   /* toast */
-  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
-    background:var(--ink);color:#fff;padding:11px 20px;border-radius:24px;font-size:13px;font-weight:500;
-    opacity:0;pointer-events:none;transition:.28s;z-index:20}
+  #toast{position:fixed;left:50%;bottom:calc(148px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(14px);
+    background:var(--ink);color:#fff;padding:12px 22px;border-radius:26px;font-size:13.5px;font-weight:500;opacity:0;
+    pointer-events:none;transition:.28s;z-index:30;max-width:86%;text-align:center}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .lgpd-note{font-size:11px;color:var(--dim);line-height:1.6;margin-top:10px}
-  /* print doc */
+
+  /* print */
   #printDoc{color:#000;font-family:var(--sans)}
-  .doc{width:23cm;padding:.7cm .9cm;border:1px solid #000}
+  .doc{width:23cm;max-width:100%;padding:.7cm .9cm;border:1px solid #000}
   .doc .dh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #000;padding-bottom:8px}
-  .doc .cnpj{font-size:20px;font-weight:700;letter-spacing:.02em}
+  .doc .cnpj{font-size:20px;font-weight:700}
   .doc .cnpj small{display:block;font-size:10px;font-weight:400;letter-spacing:.12em;text-transform:uppercase}
   .doc .nums{text-align:right;font-family:var(--mono);font-size:12px;line-height:1.5}
   .doc .nums b{font-size:15px}
   .doc h3{font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:12px 0 5px;border-bottom:1px solid #999;padding-bottom:2px}
-  .doc .cli{font-size:13px;line-height:1.5}
+  .doc .cli{font-size:14px;line-height:1.5}
   .doc .rxp{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px;margin-top:3px}
   .doc .rxp th,.doc .rxp td{border:1px solid #000;padding:5px 8px;text-align:center}
   .doc .rxp thead th{background:#eee;font-size:10px;text-transform:uppercase}
   .doc .prod{font-size:12px;line-height:1.6}
   .doc .foot{margin-top:14px;display:flex;justify-content:space-between;font-size:11px}
   .doc .sign{margin-top:26px;border-top:1px solid #000;width:7cm;text-align:center;font-size:10px;padding-top:3px}
-  @media print{
-    .app{display:none} #printDoc{display:block}
-    @page{margin:1cm}
-  }
+  @media print{ .app,.savebar,.nav,#toast{display:none!important} #printDoc{display:block} @page{margin:1cm} }
 </style>
-
+</head>
+<body>
 <div class="app" id="app">
-  <div class="top">
-    <div class="brand"><span class="k">NIT · óptica domiciliar</span><h1>Atendimento &amp; OS</h1></div>
-    <div class="who"><span id="whoName">—</span><br><span id="whoCnpj" class="dim"></span></div>
+  <div class="head">
+    <div class="top">
+      <div class="logo">
+        <span class="mk"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span>
+        <b>Órbita</b>
+      </div>
+      <div class="who">
+        <div class="id"><b id="whoName">—</b><span id="whoRole">Óptica · MEI</span></div>
+        <div class="av" id="whoAv">—</div>
+      </div>
+    </div>
   </div>
-
-  <div class="tabs" id="tabs">
-    <button data-t="atend" class="on">Atendimento</button>
-    <button data-t="ordens">Ordens</button>
-    <button data-t="ferr">Ferramentas</button>
-    <button data-t="cfg">Ajustes</button>
-  </div>
-
   <div id="view"></div>
 </div>
 
+<nav class="nav" id="nav">
+  <button data-t="atend" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M9 3.5V6h6V3.5M12 11v5M9.5 13.5h5"/></svg>Atender</button>
+  <button data-t="ordens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Ordens</button>
+  <button data-t="ferr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 4l3 3-3 3M20 7H8M7 20l-3-3 3-3M4 17h12"/></svg>Transpor</button>
+  <button data-t="cfg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 8h14M5 16h14"/><circle cx="9" cy="8" r="2.3" fill="var(--surf)"/><circle cx="15" cy="16" r="2.3" fill="var(--surf)"/></svg>Ajustes</button>
+</nav>
+
 <div id="printDoc"></div>
+<div id="rxModal" class="modal" hidden></div>
 <div id="toast"></div>
 
 <script>
-const KEY="nit_optica_os";
+const KEY="orbita_optica_os_v1";
 const TIPOS=["visão simples","multifocal","bifocal"];
 const INDICES=["resina 1.50","resina 1.56","policarbonato","trivex","resina 1.61","resina 1.67","resina 1.74","cristal"];
 const TRATAM=["AR","fotossensível","blue light","hidrofóbico","UV"];
 const STATUS=[["enviado","enviado ao lab"],["confeccao","em confecção"],["pronto","pronto"],["entregue","entregue"]];
-let S=null, editingId=null, saveT=null;
+const IC={save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7M8 20v-6h8v6"/></svg>',
+  print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V4h12v5M6 18H4v-6a2 2 0 012-2h12a2 2 0 012 2v6h-2M8 14h8v6H8z"/></svg>'};
+let S=null, editingId=null, current="atend", mem=null, form=null;
 
-/* ---------- persistence ---------- */
-function defaults(){return{config:{nome:"",cnpj:"",localStart:1},clientes:[],ordens:[],counters:{global:1,local:1}};}
-async function load(){
-  try{const r=await window.storage.get(KEY,false); if(r&&r.value) S=JSON.parse(r.value);}catch(e){S=null;}
-  if(!S||typeof S!=="object") S=defaults();
-  S.config=Object.assign(defaults().config,S.config||{});
-  S.clientes=S.clientes||[]; S.ordens=S.ordens||[];
-  S.counters=Object.assign({global:1,local:1},S.counters||{});
-}
-function persist(){
-  clearTimeout(saveT);
-  saveT=setTimeout(async()=>{try{await window.storage.set(KEY,JSON.stringify(S),false);}catch(e){}},150);
-}
+/* persistence */
+function writeStore(o){try{localStorage.setItem(KEY,JSON.stringify(o));mem=null;}catch(e){mem=o;}}
+function readStore(){try{const s=localStorage.getItem(KEY);if(s)return JSON.parse(s);}catch(e){}return mem;}
+function defaults(){return{config:{nome:"",cnpj:""},clientes:[],ordens:[],counters:{global:1,local:1}};}
+function loadState(){S=readStore();if(!S||typeof S!=="object")S=defaults();
+  S.config=Object.assign({nome:"",cnpj:""},S.config||{});S.clientes=S.clientes||[];S.ordens=S.ordens||[];
+  S.counters=Object.assign({global:1,local:1},S.counters||{});}
+function persist(){writeStore(S);}
 function uid(){return Math.random().toString(36).slice(2,9);}
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000);}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
 function fmtG(n){return "OS-"+String(n).padStart(6,"0");}
 function today(){return new Date().toISOString().slice(0,10);}
 function brDate(iso){if(!iso)return"";const[y,m,d]=iso.split("-");return d+"/"+m+"/"+y;}
+function brShort(iso){const M=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];const[y,m,d]=iso.split("-");return d+" "+M[+m-1];}
+function initials(n){n=(n||"").trim();if(!n)return"—";const p=n.split(/\s+/);return((p[0][0]||"")+(p.length>1?p[p.length-1][0]:"")).toUpperCase();}
 
-/* ---------- navigation ---------- */
-let current="atend";
-function nav(t){current=t;document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));draw();}
+function nav(t){current=t;document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  document.body.classList.toggle("atend",t==="atend");draw();window.scrollTo(0,0);}
 
-/* ---------- receita helpers ---------- */
+/* receita */
 const RX_FIELDS=["esf","cil","eixo","ad"];
 function blankRx(){return{od:{esf:"",cil:"",eixo:"",ad:""},oe:{esf:"",cil:"",eixo:"",ad:""}};}
-function validRx(rx){
-  const errs={};
-  for(const eye of ["od","oe"]){
-    const e=rx[eye];
-    for(const f of ["esf","cil","ad"]){
-      if(e[f]!==""&&isNaN(parseFloat(e[f]))) errs[eye+f]="número";
-      else if(f!=="ad"&&e[f]!==""&&Math.abs(parseFloat(e[f]))>30) errs[eye+f]="fora de faixa";
-      else if(f==="ad"&&e[f]!==""&&(parseFloat(e[f])<0||parseFloat(e[f])>4)) errs[eye+f]="0–4";
-    }
-    if(e.eixo!==""){
-      const x=parseInt(e.eixo);
-      if(isNaN(x)||x<0||x>180) errs[eye+"eixo"]="0–180";
-    }
-    if(e.cil!==""&&parseFloat(e.cil)!==0&&e.eixo==="") errs[eye+"eixo"]="obrigatório com cil.";
-  }
-  return errs;
-}
+function splitSigned(v){v=(v||"").trim();if(v==="")return{sign:"-",mag:""};
+  if(v[0]==="-")return{sign:"-",mag:v.slice(1)};if(v[0]==="+")return{sign:"+",mag:v.slice(1)};return{sign:"+",mag:v};}
+const RX_LABEL={esf:"Esférico",cil:"Cilíndrico",eixo:"Eixo",ad:"Adição"};
+const RX_SHORT={esf:"Esf.",cil:"Cil.",eixo:"Eixo",ad:"Adição"};
+function formatDisp(f,v){if(v===""||v==null)return '<span class="ph">—</span>';
+  if(f==="esf"||f==="cil"){if(v[0]==="-")return "\u2212"+esc(v.slice(1));if(v[0]==="+")return "+"+esc(v.slice(1));return "+"+esc(v);}
+  if(f==="eixo")return esc(v)+"\u00b0";
+  if(f==="ad"){const m=v[0]==="+"?v.slice(1):v;return "+"+esc(m);}
+  return esc(v);}
+function rxRowsHTML(){return ["od","oe"].map(eye=>`<div class="rxr rxrow"><span class="badge">${eye.toUpperCase()}</span>${RX_FIELDS.map(f=>`<button type="button" class="rxcell" data-eye="${eye}" data-f="${f}">${formatDisp(f,form.rx[eye][f])}</button>`).join("")}</div>`).join("");}
+function wireRxCells(){document.querySelectorAll("#rxRows .rxcell").forEach(c=>c.onclick=()=>openRxModal(c.dataset.eye,c.dataset.f));}
+function refreshRxRows(){const el=document.getElementById("rxRows");if(el){el.innerHTML=rxRowsHTML();wireRxCells();}liveRxValidate();}
 
-/* ---------- ATENDIMENTO ---------- */
-let form=null;
+/* receita modal */
+let rxModal=null;
+function openRxModal(eye,field){const g=form.rx[eye],es=splitSigned(g.esf),cs=splitSigned(g.cil),adm=(g.ad||"").replace(/^\+/,"");
+  rxModal={eye,field,buf:{esf:{sign:es.sign,mag:es.mag},cil:{sign:cs.sign,mag:cs.mag},eixo:(g.eixo||""),ad:{mag:adm}}};
+  document.getElementById("rxModal").hidden=false;document.body.style.overflow="hidden";renderRxModal();}
+function closeRxModal(commit){const m=document.getElementById("rxModal");
+  if(commit&&rxModal){const b=rxModal.buf,eye=rxModal.eye;
+    form.rx[eye].esf=b.esf.mag===""?"":(b.esf.sign==="-"?"-":"+")+b.esf.mag;
+    form.rx[eye].cil=b.cil.mag===""?"":(b.cil.sign==="-"?"-":"+")+b.cil.mag;
+    form.rx[eye].eixo=b.eixo;form.rx[eye].ad=b.ad.mag===""?"":b.ad.mag;refreshRxRows();}
+  rxModal=null;m.hidden=true;document.body.style.overflow="";}
+function rxBuf(){const f=rxModal.field;return (f==="esf"||f==="cil")?rxModal.buf[f]:(f==="ad"?rxModal.buf.ad:null);}
+function fmtBig(f){const b=rxModal.buf;
+  if(f==="esf"||f==="cil"){const t=b[f];return t.mag===""?"—":(t.sign==="-"?"\u2212":"+")+t.mag;}
+  if(f==="eixo")return b.eixo===""?"—":b.eixo+"\u00b0";
+  return b.ad.mag===""?"—":"+"+b.ad.mag;}
+function rxKey(k){const f=rxModal.field,b=rxModal.buf;
+  if(f==="eixo"){if(k==="back")b.eixo=b.eixo.slice(0,-1);
+    else if(/[0-9]/.test(k)){let n=(b.eixo==="0"?"":b.eixo)+k;if(n.length<=3&&parseInt(n)<=180)b.eixo=n;}renderRxModal();return;}
+  const t=rxBuf();
+  if(k==="back")t.mag=t.mag.slice(0,-1);
+  else if(k==="."){if(!t.mag.includes("."))t.mag=(t.mag===""?"0":t.mag)+".";}
+  else if(k==="sign"){if(f==="esf"||f==="cil")t.sign=t.sign==="-"?"+":"-";}
+  else if(/[0-9]/.test(k)){if(t.mag.replace(".","").length<4)t.mag=(t.mag==="0"?"":t.mag)+k;}
+  renderRxModal();}
+function rxStep(d){const f=rxModal.field,b=rxModal.buf;if(f==="eixo"){let n=(parseInt(b.eixo||"0")||0)+d*4;n=Math.max(0,Math.min(180,n));b.eixo=String(n);renderRxModal();return;}
+  const t=rxBuf();let cur=t.mag===""?0:((f!=="ad"&&t.sign==="-")?-1:1)*parseFloat(t.mag||"0");let nv=cur+d;if(f==="ad"&&nv<0)nv=0;
+  t.mag=Math.abs(nv).toFixed(2);if(f==="esf"||f==="cil")t.sign=nv<0?"-":"+";renderRxModal();}
+function rxGoto(f){rxModal.field=f;renderRxModal();}
+function rxNav(dir){const i=RX_FIELDS.indexOf(rxModal.field)+dir;if(i>=0&&i<RX_FIELDS.length){rxModal.field=RX_FIELDS[i];renderRxModal();}}
+function rxWarn(){const f=rxModal.field,b=rxModal.buf;
+  if(f==="esf"||f==="cil"){const v=b[f].mag===""?0:parseFloat(b[f].mag);if(v>30)return "Fora da faixa — máximo 30 dioptrias";}
+  if(f==="ad"){const v=b.ad.mag===""?0:parseFloat(b.ad.mag);if(v>4)return "Adição costuma ir até +4,00";}
+  return "";}
+function renderRxModal(){const f=rxModal.field,eye=rxModal.eye,idx=RX_FIELDS.indexOf(f);
+  const tabs=RX_FIELDS.map(ff=>{const val=fmtBigFor(ff);return `<button class="mtab ${ff===f?"on":""}" onclick="rxGoto('${ff}')"><span class="l">${RX_SHORT[ff]}</span><span class="v ${val==="—"?"ph":""}">${val}</span></button>`;}).join("");
+  const isSigned=f==="esf"||f==="cil",isAxis=f==="eixo",isAdd=f==="ad";
+  let steps="";
+  if(isSigned)steps=`<div class="steps"><button onclick="rxStep(-0.25)">\u2212 0,25</button><button onclick="rxKey('sign')">\u00b1 sinal</button><button onclick="rxStep(0.25)">+ 0,25</button></div>`;
+  else if(isAdd)steps=`<div class="steps"><button onclick="rxStep(-0.25)">\u2212 0,25</button><button onclick="rxStep(0.25)">+ 0,25</button></div>`;
+  else steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 4\u00b0</button><button onclick="rxStep(1)">+ 4\u00b0</button></div>`;
+  const dotBtn=`<button class="sm" onclick="rxKey('.')" ${isAxis?"disabled":""}>.</button>`;
+  const digits=[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="rxKey('${n}')">${n}</button>`).join("");
+  const pad=`<div class="pad">${digits}${dotBtn}<button onclick="rxKey('0')">0</button><button class="sm" onclick="rxKey('back')">\u232B</button></div>`;
+  document.getElementById("rxModal").innerHTML=`
+    <div class="mhd"><h3>Receita — <span>${eye.toUpperCase()}</span></h3><button class="x" onclick="closeRxModal(false)">\u00d7</button></div>
+    <div class="mbody">
+      <div class="mtabs">${tabs}</div>
+      <div class="mbig"><div class="cur">${fmtBig(f)}</div><div class="lab">${RX_LABEL[f]}${isSigned?" · dioptria":isAxis?" · graus (0–180)":" · dioptria"}</div></div>
+      <div class="mwarn">${rxWarn()}</div>
+      ${steps}
+      ${pad}
+    </div>
+    <div class="mftr"><div class="in">
+      <div class="mnav"><button onclick="rxNav(-1)" ${idx===0?"disabled":""}>\u2039 Anterior</button><button onclick="rxNav(1)" ${idx===RX_FIELDS.length-1?"disabled":""}>Próximo \u203a</button></div>
+      <button class="btn pri" onclick="closeRxModal(true)">Confirmar ${eye.toUpperCase()}</button>
+    </div></div>`;}
+function fmtBigFor(ff){const b=rxModal.buf;if(ff==="esf"||ff==="cil"){const t=b[ff];return t.mag===""?"—":(t.sign==="-"?"\u2212":"+")+t.mag;}if(ff==="eixo")return b.eixo===""?"—":b.eixo+"\u00b0";return b.ad.mag===""?"—":"+"+b.ad.mag;}
+function validRx(rx){const errs={};for(const eye of["od","oe"]){const e=rx[eye];
+  for(const f of["esf","cil","ad"]){
+    if(e[f]!==""&&isNaN(parseFloat(e[f])))errs[eye+f]="número";
+    else if(f!=="ad"&&e[f]!==""&&Math.abs(parseFloat(e[f]))>30)errs[eye+f]="faixa";
+    else if(f==="ad"&&e[f]!==""&&(parseFloat(e[f])<0||parseFloat(e[f])>4))errs[eye+f]="0–4";}
+  if(e.eixo!==""){const x=parseInt(e.eixo);if(isNaN(x)||x<0||x>180)errs[eye+"eixo"]="0–180";}
+  if(e.cil!==""&&parseFloat(e.cil)!==0&&e.eixo==="")errs[eye+"eixo"]="eixo";}
+  return errs;}
+
+/* atendimento */
 function newForm(){return{clienteId:null,nome:"",contato:"",endereco:"",rx:blankRx(),
   medidas:{dnpOD:"",dnpOE:"",altOD:"",altOE:""},
   produto:{armacao:"",tipo:"",indice:"",tratam:[],obs:""},valor:"",status:"enviado",consent:false};}
-
-function loadOrdemToForm(o){
-  const c=S.clientes.find(x=>x.id===o.clienteId)||{};
+function loadOrdemToForm(o){const c=S.clientes.find(x=>x.id===o.clienteId)||{};
   form={clienteId:o.clienteId,nome:c.nome||"",contato:c.contato||"",endereco:c.endereco||"",
     rx:JSON.parse(JSON.stringify(o.receita)),medidas:Object.assign({},o.medidas),
     produto:Object.assign({tratam:[]},o.produto),valor:o.valor||"",status:o.status,consent:true};
-  editingId=o.id;nav("atend");
-}
+  editingId=o.id;nav("atend");}
+
+const LENS=`<svg class="rxbg" width="260" height="150" viewBox="0 0 260 150" fill="none" stroke="#0f7d6e" stroke-opacity=".14">
+  <g stroke-width="1"><circle cx="130" cy="82" r="66"/><circle cx="130" cy="82" r="42" stroke-dasharray="3 4"/><circle cx="130" cy="82" r="20" stroke-dasharray="3 4"/>
+  <path d="M130 8v148M40 82h180" stroke-dasharray="2 5"/></g>
+  <g stroke-width="1" stroke-opacity=".18">${Array.from({length:25}).map((_,i)=>`<path d="M${20+i*9} 8v${i%5===0?9:5}"/>`).join("")}</g></svg>`;
 
 function drawAtend(){
-  if(!form) form=newForm();
+  if(!form)form=newForm();
   const dl=S.clientes.map(c=>`<option value="${esc(c.nome)}">`).join("");
-  const v=document.getElementById("view");
-  v.innerHTML=`
+  const editing=!!editingId;
+  document.getElementById("view").innerHTML=`
+  <div class="ptitle"><h1>${editing?"Editar atendimento":"Novo atendimento"}</h1>
+    <span class="meta">${editing?fmtG(S.ordens.find(o=>o.id===editingId).osGlobal):brShort(today())}</span></div>
+
   <div class="card">
-    <h2>Cliente</h2>
-    <p class="hint">${editingId?"Editando "+fmtG(S.ordens.find(o=>o.id===editingId).osGlobal):"Novo atendimento. Digite um nome já atendido para reaproveitar os dados."}</p>
-    <div class="grid g2">
-      <label class="f">Nome<input id="f_nome" list="cli_dl" value="${esc(form.nome)}" placeholder="Nome do cliente"></label>
-      <label class="f">Contato<input id="f_contato" value="${esc(form.contato)}" placeholder="Telefone / WhatsApp"></label>
+    <div class="shead"><span class="n">01</span><span class="bar"></span><h2>Cliente</h2></div>
+    <div class="fgrid f2">
+      <label class="field"><span class="flab">Nome</span><input id="f_nome" list="cli_dl" value="${esc(form.nome)}" placeholder="Nome do cliente"></label>
+      <label class="field"><span class="flab">Telefone</span><input id="f_contato" type="tel" value="${esc(form.contato)}" placeholder="Fica só no sistema"></label>
     </div>
     <datalist id="cli_dl">${dl}</datalist>
-    <label class="f" style="margin-top:12px">Endereço do atendimento<input id="f_end" value="${esc(form.endereco)}" placeholder="Onde o atendimento aconteceu"></label>
+    <label class="field" style="margin-top:11px"><span class="flab">Endereço da visita</span><input id="f_end" value="${esc(form.endereco)}" placeholder="Não é impresso na OS"></label>
     <div id="histBox"></div>
   </div>
 
   <div class="card">
-    <h2>Receita</h2>
-    <p class="hint">Valores em dioptria. Eixo 0–180. A faixa é validada para evitar erro de registro.</p>
-    <div class="rx"><table><thead><tr>
-      <th></th><th>Esférico</th><th>Cilíndrico</th><th>Eixo</th><th>Adição</th></tr></thead>
-      <tbody>${["od","oe"].map(eye=>`<tr><th>${eye.toUpperCase()}</th>${RX_FIELDS.map(f=>{
-        const ph=f==="eixo"?"0–180":(f==="ad"?"+0.00":"±0.00");
-        return `<td><input class="num rxi" data-eye="${eye}" data-f="${f}" value="${esc(form.rx[eye][f])}" placeholder="${ph}" inputmode="decimal"></td>`;
-      }).join("")}</tr>`).join("")}</tbody></table></div>
+    <div class="shead"><span class="n">02</span><span class="bar"></span><h2>Receita</h2></div>
+    <div class="rxcard">${LENS}<div class="rxgrid">
+      <div class="rxr rxhead"><span></span><span>Esfera<i>±</i></span><span>Cilindro<i>±</i></span><span>Eixo<i>°</i></span><span>Adição<i>+</i></span></div>
+      <div id="rxRows">${rxRowsHTML()}</div>
+      <div class="rxfoot"><span>dioptria · eixo em graus</span><span>${brShort(today())}</span></div>
+    </div></div>
     <p class="fe" id="rxErr"></p>
   </div>
 
   <div class="card">
-    <h2>Medidas</h2>
-    <div class="grid g2">
-      <label class="f">DNP — OD (mm)<input class="num md" data-k="dnpOD" value="${esc(form.medidas.dnpOD)}" inputmode="decimal"></label>
-      <label class="f">DNP — OE (mm)<input class="num md" data-k="dnpOE" value="${esc(form.medidas.dnpOE)}" inputmode="decimal"></label>
-      <label class="f">Altura óptica — OD (mm)<input class="num md" data-k="altOD" value="${esc(form.medidas.altOD)}" inputmode="decimal"></label>
-      <label class="f">Altura óptica — OE (mm)<input class="num md" data-k="altOE" value="${esc(form.medidas.altOE)}" inputmode="decimal"></label>
+    <div class="shead"><span class="n">03</span><span class="bar"></span><h2>Medições</h2></div>
+    <div class="mtable">
+      <div class="mrow mhead"><span>Olho</span><span class="h">DNP</span><span class="h">Altura óptica</span></div>
+      ${["OD","OE"].map(E=>{const e=E.toLowerCase();return `<div class="mrow"><span class="badge">${E}</span>
+        <div class="mcell"><input class="md" data-k="dnp${E}" value="${esc(form.medidas["dnp"+E])}" inputmode="decimal" placeholder="—"><span class="u">mm</span></div>
+        <div class="mcell"><input class="md" data-k="alt${E}" value="${esc(form.medidas["alt"+E])}" inputmode="decimal" placeholder="—"><span class="u">mm</span></div></div>`;}).join("")}
+      <div class="mtot"><span class="l">DP total</span><span class="v" id="dpTotal">—</span></div>
     </div>
   </div>
 
   <div class="card">
-    <h2>Produto</h2>
-    <div class="grid g2">
-      <label class="f">Armação<input id="p_arm" value="${esc(form.produto.armacao)}" placeholder="Marca / modelo"></label>
-      <label class="f">Tipo de lente<select id="p_tipo"><option value="">—</option>${TIPOS.map(t=>`<option ${form.produto.tipo===t?"selected":""}>${t}</option>`).join("")}</select></label>
-      <label class="f">Material / índice<select id="p_ind"><option value="">—</option>${INDICES.map(t=>`<option ${form.produto.indice===t?"selected":""}>${t}</option>`).join("")}</select></label>
-      <label class="f">Valor (opcional, p/ recibo)<input id="p_valor" value="${esc(form.valor)}" placeholder="R$" inputmode="decimal"></label>
+    <div class="shead"><span class="n">04</span><span class="bar"></span><h2>Produto</h2></div>
+    <div class="fgrid">
+      <label class="field"><span class="flab">Armação</span><input id="p_arm" value="${esc(form.produto.armacao)}" placeholder="Marca / modelo"></label>
+      <label class="field sel"><span class="flab">Tipo de lente</span><select id="p_tipo"><option value="">—</option>${TIPOS.map(t=>`<option ${form.produto.tipo===t?"selected":""}>${t}</option>`).join("")}</select></label>
+      <label class="field sel"><span class="flab">Material e índice</span><select id="p_ind"><option value="">—</option>${INDICES.map(t=>`<option ${form.produto.indice===t?"selected":""}>${t}</option>`).join("")}</select></label>
     </div>
-    <p class="hint" style="margin:15px 0 7px">Tratamentos</p>
+    <p class="hint" style="margin:15px 0 9px">Tratamentos</p>
     <div class="chips" id="tratChips">${TRATAM.map(t=>`<span class="chip ${form.produto.tratam.includes(t)?"on":""}" data-t="${t}">${t}</span>`).join("")}</div>
-    <label class="f" style="margin-top:14px">Observações<textarea id="p_obs" rows="2">${esc(form.produto.obs)}</textarea></label>
+    <label class="field" style="margin-top:14px"><span class="flab">Preço (opcional, p/ recibo)</span><input id="p_valor" value="${esc(form.valor)}" placeholder="R$" inputmode="decimal"></label>
+    <label class="field" style="margin-top:11px"><span class="flab">Observações</span><textarea id="p_obs" rows="2">${esc(form.produto.obs)}</textarea></label>
   </div>
 
   <div class="card">
-    <h2>Consentimento (LGPD)</h2>
-    <label class="consent">
-      <input type="checkbox" id="consentChk" ${form.consent?"checked":""}>
-      <span class="t">O cliente autoriza o registro da receita para confecção da lente e histórico de atendimento, e o envio ao laboratório escolhido. Dado sensível de saúde — tratado só para essa finalidade, revogável a qualquer momento.</span>
-    </label>
-    <p class="lgpd-note">Você é o Controlador dos dados; a ferramenta apenas processa. Guardamos só o necessário para a OS e o histórico.</p>
-    <div class="actions" style="margin-top:16px">
-      <button class="btn pri" id="saveBtn">${editingId?"Salvar alterações":"Salvar OS"}</button>
-      <button class="btn sec" id="savePrintBtn">Salvar e imprimir</button>
-      ${editingId?'<button class="btn ghost" id="cancelEdit">Cancelar edição</button>':''}
-    </div>
-  </div>`;
+    <div class="shead"><span class="n">05</span><span class="bar"></span><h2>Consentimento LGPD</h2></div>
+    <label class="consent"><input type="checkbox" id="consentChk" ${form.consent?"checked":""}>
+      <span class="t">Autorizo a coleta e o tratamento dos meus dados de saúde visual para a confecção da receita e do pedido de serviço, conforme a LGPD (Lei 13.709/2018).<br><a>Ler política de privacidade</a></span></label>
+    <p class="lgpd-note">Você é o Controlador; a ferramenta só processa. Telefone e endereço ficam apenas no sistema e nunca são impressos.</p>
+    ${editing?'<div style="margin-top:12px"><button class="btn ghost" id="cancelEdit">Cancelar edição</button></div>':''}
+  </div>
 
-  // wire cliente
+  <div class="savebar"><div class="w">
+    <button class="btn pri" id="saveBtn">${IC.save}${editing?"Salvar alterações":"Salvar pedido"}</button>
+    <button class="btn sec" id="savePrintBtn">${IC.print}Salvar e imprimir</button>
+  </div></div>`;
+
   const nameEl=document.getElementById("f_nome");
-  nameEl.addEventListener("input",e=>{form.nome=e.target.value;});
-  nameEl.addEventListener("change",e=>{ const m=S.clientes.find(c=>c.nome.toLowerCase()===e.target.value.trim().toLowerCase());
-    if(m){form.clienteId=m.id;form.contato=m.contato;form.endereco=m.endereco;document.getElementById("f_contato").value=m.contato||"";document.getElementById("f_end").value=m.endereco||"";drawHist(m);} });
+  nameEl.addEventListener("input",e=>form.nome=e.target.value);
+  nameEl.addEventListener("change",e=>{const m=S.clientes.find(c=>c.nome.toLowerCase()===e.target.value.trim().toLowerCase());
+    if(m){form.clienteId=m.id;form.contato=m.contato;form.endereco=m.endereco;
+      document.getElementById("f_contato").value=m.contato||"";document.getElementById("f_end").value=m.endereco||"";drawHist(m);}});
   document.getElementById("f_contato").addEventListener("input",e=>form.contato=e.target.value);
   document.getElementById("f_end").addEventListener("input",e=>form.endereco=e.target.value);
   if(form.clienteId){const m=S.clientes.find(c=>c.id===form.clienteId);if(m)drawHist(m);}
 
-  // wire receita
-  document.querySelectorAll(".rxi").forEach(i=>i.addEventListener("input",e=>{
-    form.rx[e.target.dataset.eye][e.target.dataset.f]=e.target.value; liveRxValidate();}));
-  // medidas
-  document.querySelectorAll(".md").forEach(i=>i.addEventListener("input",e=>form.medidas[e.target.dataset.k]=e.target.value));
-  // produto
+  wireRxCells();
+  document.querySelectorAll(".md").forEach(i=>i.addEventListener("input",e=>{form.medidas[e.target.dataset.k]=e.target.value;updateDP();}));
+  updateDP();
   document.getElementById("p_arm").addEventListener("input",e=>form.produto.armacao=e.target.value);
   document.getElementById("p_tipo").addEventListener("change",e=>form.produto.tipo=e.target.value);
   document.getElementById("p_ind").addEventListener("change",e=>form.produto.indice=e.target.value);
   document.getElementById("p_valor").addEventListener("input",e=>form.valor=e.target.value);
   document.getElementById("p_obs").addEventListener("input",e=>form.produto.obs=e.target.value);
   document.querySelectorAll("#tratChips .chip").forEach(ch=>ch.addEventListener("click",()=>{
-    const t=ch.dataset.t;const i=form.produto.tratam.indexOf(t);
-    if(i>=0)form.produto.tratam.splice(i,1);else form.produto.tratam.push(t);ch.classList.toggle("on");}));
+    const t=ch.dataset.t,i=form.produto.tratam.indexOf(t);if(i>=0)form.produto.tratam.splice(i,1);else form.produto.tratam.push(t);ch.classList.toggle("on");}));
   document.getElementById("consentChk").addEventListener("change",e=>form.consent=e.target.checked);
   document.getElementById("saveBtn").onclick=()=>saveOrdem(false);
   document.getElementById("savePrintBtn").onclick=()=>saveOrdem(true);
-  if(editingId)document.getElementById("cancelEdit").onclick=()=>{editingId=null;form=newForm();nav("atend");};
+  if(editing)document.getElementById("cancelEdit").onclick=()=>{editingId=null;form=newForm();nav("atend");};
 }
 
-function drawHist(cli){
-  const box=document.getElementById("histBox");if(!box)return;
+function updateDP(){const a=parseFloat(form.medidas.dnpOD),b=parseFloat(form.medidas.dnpOE);const el=document.getElementById("dpTotal");if(!el)return;
+  if(!isNaN(a)&&!isNaN(b))el.textContent=String((a+b).toFixed(1)).replace(".",",")+" mm";
+  else if(!isNaN(a)||!isNaN(b))el.textContent=String(((isNaN(a)?0:a)+(isNaN(b)?0:b)).toFixed(1)).replace(".",",")+" mm";
+  else el.textContent="—";}
+
+function drawHist(cli){const box=document.getElementById("histBox");if(!box)return;
   const prev=S.ordens.filter(o=>o.clienteId===cli.id).sort((a,b)=>b.data.localeCompare(a.data));
   if(!prev.length){box.innerHTML="";return;}
-  const last=prev[0];const r=last.receita;
-  box.innerHTML=`<div style="margin-top:13px;background:var(--surf2);border:1px solid var(--line);border-radius:9px;padding:11px 13px;font-size:12px">
-    <b style="color:var(--acc-d)">Histórico — última OS ${brDate(last.data)}</b>
-    <div style="font-family:var(--mono);margin-top:5px;color:var(--mut)">
-      OD ${rxLine(r.od)} · OE ${rxLine(r.oe)}</div>
-    <button class="icobtn" id="copyRx" style="margin-top:9px">Copiar receita anterior</button></div>`;
-  document.getElementById("copyRx").onclick=()=>{form.rx=JSON.parse(JSON.stringify(last.receita));drawAtend();};
-}
+  const last=prev[0],r=last.receita;
+  box.innerHTML=`<div style="margin-top:13px;background:var(--acc-tint);border:1px solid #cfe4df;border-radius:14px;padding:12px 14px">
+    <b style="color:var(--acc-d);font-size:12.5px">Histórico — última OS ${brDate(last.data)}</b>
+    <div style="font-family:var(--mono);margin-top:6px;color:var(--mut);font-size:12.5px">OD ${rxLine(r.od)} · OE ${rxLine(r.oe)}</div>
+    <button class="icobtn" id="copyRx" style="margin-top:11px;background:#fff">Copiar receita anterior</button></div>`;
+  document.getElementById("copyRx").onclick=()=>{form.rx=JSON.parse(JSON.stringify(last.receita));drawAtend();};}
 function rxLine(e){return `${e.esf||"—"} ${e.cil||""} ${e.eixo?"x"+e.eixo:""} ${e.ad?"add "+e.ad:""}`.trim();}
 
-function liveRxValidate(){
-  const errs=validRx(form.rx);
-  document.querySelectorAll(".rxi").forEach(i=>i.classList.toggle("bad",!!errs[i.dataset.eye+i.dataset.f]));
-  const msgs=Object.entries(errs).map(([k,val])=>k.slice(0,2).toUpperCase()+" "+k.slice(2)+": "+val);
-  document.getElementById("rxErr").textContent=msgs.join("  ·  ");
-  return Object.keys(errs).length===0;
-}
+function liveRxValidate(){const errs=validRx(form.rx);
+  document.querySelectorAll("#rxRows .rxcell").forEach(c=>c.classList.toggle("bad",!!errs[c.dataset.eye+c.dataset.f]));
+  document.getElementById("rxErr").textContent=Object.entries(errs).map(([k,val])=>k.slice(0,2).toUpperCase()+" "+k.slice(2)+": "+val).join("   ");
+  return Object.keys(errs).length===0;}
 
 function saveOrdem(printAfter){
   if(!form.nome.trim()){toast("Informe o nome do cliente.");return;}
   if(!liveRxValidate()){toast("Corrija a receita antes de salvar.");return;}
-  if(!form.consent){toast("Marque o consentimento LGPD para salvar.");return;}
-  // upsert cliente
+  if(!form.consent){toast("Marque o consentimento LGPD.");return;}
   let cli=form.clienteId?S.clientes.find(c=>c.id===form.clienteId):null;
-  if(!cli){cli=S.clientes.find(c=>c.nome.toLowerCase()===form.nome.trim().toLowerCase());}
+  if(!cli)cli=S.clientes.find(c=>c.nome.toLowerCase()===form.nome.trim().toLowerCase());
   if(cli){cli.nome=form.nome.trim();cli.contato=form.contato;cli.endereco=form.endereco;}
   else{cli={id:uid(),nome:form.nome.trim(),contato:form.contato,endereco:form.endereco};S.clientes.push(cli);}
-
   let ordem;
-  if(editingId){
-    ordem=S.ordens.find(o=>o.id===editingId);
+  if(editingId){ordem=S.ordens.find(o=>o.id===editingId);
     ordem.clienteId=cli.id;ordem.receita=form.rx;ordem.medidas=form.medidas;
     ordem.produto={armacao:form.produto.armacao,tipo:form.produto.tipo,indice:form.produto.indice,tratam:form.produto.tratam,obs:form.produto.obs};
-    ordem.valor=form.valor;ordem.status=form.status;
-    toast("OS atualizada.");
-  }else{
-    ordem={id:uid(),osGlobal:S.counters.global,osLocal:S.counters.local,clienteId:cli.id,data:today(),
+    ordem.valor=form.valor;toast("Pedido atualizado.");
+  }else{ordem={id:uid(),osGlobal:S.counters.global,osLocal:S.counters.local,clienteId:cli.id,data:today(),
       receita:form.rx,medidas:form.medidas,
       produto:{armacao:form.produto.armacao,tipo:form.produto.tipo,indice:form.produto.indice,tratam:form.produto.tratam,obs:form.produto.obs},
       valor:form.valor,status:form.status,consent:{aceito:true,data:new Date().toISOString()}};
-    S.ordens.push(ordem);
-    S.counters.global++;S.counters.local++;
-    toast(fmtG(ordem.osGlobal)+" criada.");
-  }
-  persist();
-  const savedId=ordem.id;editingId=null;form=newForm();
-  if(printAfter){printOrdem(savedId,"os");}
-  nav("ordens");
-}
+    S.ordens.push(ordem);S.counters.global++;S.counters.local++;toast(fmtG(ordem.osGlobal)+" criada.");}
+  persist();const savedId=ordem.id;editingId=null;form=newForm();
+  if(printAfter)printOrdem(savedId,"os");nav("ordens");}
 
-/* ---------- ORDENS ---------- */
+/* ordens */
 function drawOrdens(){
-  const v=document.getElementById("view");
   const list=[...S.ordens].sort((a,b)=>b.osGlobal-a.osGlobal);
-  v.innerHTML=`<input class="search" id="ordSearch" placeholder="Buscar por cliente ou número">
-    <div class="ordens" id="ordList"></div>`;
-  const render=(q="")=>{
-    const box=document.getElementById("ordList");
-    const f=list.filter(o=>{const c=S.clientes.find(x=>x.id===o.clienteId)||{};
-      const s=(c.nome+" "+fmtG(o.osGlobal)+" #"+o.osLocal).toLowerCase();return s.includes(q.toLowerCase());});
-    if(!f.length){box.innerHTML='<div class="empty">Nenhuma ordem ainda. Comece um atendimento.</div>';return;}
+  document.getElementById("view").innerHTML=`<div class="ptitle"><h1>Ordens</h1><span class="meta">${S.ordens.length} pedido${S.ordens.length!==1?"s":""}</span></div>
+    <label class="field search"><span class="flab">Buscar</span><input id="ordSearch" placeholder="Cliente ou número"></label><div class="ordens" id="ordList"></div>`;
+  const render=(q="")=>{const box=document.getElementById("ordList");
+    const f=list.filter(o=>{const c=S.clientes.find(x=>x.id===o.clienteId)||{};return (c.nome+" "+fmtG(o.osGlobal)+" #"+o.osLocal).toLowerCase().includes(q.toLowerCase());});
+    if(!f.length){box.innerHTML='<div class="empty">Nenhuma ordem ainda.<br>Comece um atendimento.</div>';return;}
     box.innerHTML="";
-    f.forEach(o=>{
-      const c=S.clientes.find(x=>x.id===o.clienteId)||{nome:"—"};
-      const el=document.createElement("div");el.className="ord";
-      el.innerHTML=`<div><div class="id">${fmtG(o.osGlobal)} <span class="loc">· sua #${o.osLocal}</span></div>
-        <div class="nm">${esc(c.nome)}</div>
-        <div class="meta">${brDate(o.data)} · ${esc(o.produto.tipo||"lente")} ${esc(o.produto.indice||"")}</div></div>
-        <div class="ctrl">
-          <select class="status" data-s="${o.status}">${STATUS.map(([k,l])=>`<option value="${k}" ${o.status===k?"selected":""}>${l}</option>`).join("")}</select>
-          <button class="icobtn" data-a="os">OS</button>
-          <button class="icobtn" data-a="recibo">recibo</button>
-          <button class="icobtn" data-a="edit">editar</button>
-          <button class="icobtn del" data-a="del">×</button>
-        </div>`;
+    f.forEach(o=>{const c=S.clientes.find(x=>x.id===o.clienteId)||{nome:"—"};const el=document.createElement("div");el.className="ord";
+      el.innerHTML=`<div class="id">${fmtG(o.osGlobal)} <span class="loc">· sua #${o.osLocal}</span></div>
+        <div class="nm">${esc(c.nome)}</div><div class="meta">${brDate(o.data)} · ${esc(o.produto.tipo||"lente")} ${esc(o.produto.indice||"")}</div>
+        <div class="ctrl"><select class="status" data-s="${o.status}">${STATUS.map(([k,l])=>`<option value="${k}" ${o.status===k?"selected":""}>${l}</option>`).join("")}</select>
+          <button class="icobtn" data-a="os">OS</button><button class="icobtn" data-a="recibo">recibo</button>
+          <button class="icobtn" data-a="edit">editar</button><button class="icobtn del" data-a="del">excluir</button></div>`;
       el.querySelector(".status").addEventListener("change",e=>{o.status=e.target.value;e.target.dataset.s=e.target.value;persist();});
-      el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{
-        const a=b.dataset.a;
-        if(a==="os")printOrdem(o.id,"os");
-        else if(a==="recibo")printOrdem(o.id,"recibo");
-        else if(a==="edit")loadOrdemToForm(o);
-        else if(a==="del"){if(confirm("Excluir "+fmtG(o.osGlobal)+"?")){S.ordens=S.ordens.filter(x=>x.id!==o.id);persist();drawOrdens();}}
-      });
-      box.appendChild(el);
-    });
-  };
-  render();
-  document.getElementById("ordSearch").addEventListener("input",e=>render(e.target.value));
-}
+      el.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{const a=b.dataset.a;
+        if(a==="os")printOrdem(o.id,"os");else if(a==="recibo")printOrdem(o.id,"recibo");else if(a==="edit")loadOrdemToForm(o);
+        else if(a==="del"){if(confirm("Excluir "+fmtG(o.osGlobal)+"?")){S.ordens=S.ordens.filter(x=>x.id!==o.id);persist();drawOrdens();}}});
+      box.appendChild(el);});};
+  render();document.getElementById("ordSearch").addEventListener("input",e=>render(e.target.value));}
 
-/* ---------- FERRAMENTAS: transposição ---------- */
-function drawFerr(){
-  const v=document.getElementById("view");
-  v.innerHTML=`<div class="card">
-    <h2>Transposição de eixo/cilíndrico</h2>
-    <p class="hint">Converte a notação (positiva ↔ negativa) quando a lente tem limite de faixa por sinal. Cálculo na hora do atendimento.</p>
-    <div class="grid g3">
-      <label class="f">Esférico<input class="num" id="t_esf" inputmode="decimal" placeholder="±0.00"></label>
-      <label class="f">Cilíndrico<input class="num" id="t_cil" inputmode="decimal" placeholder="±0.00"></label>
-      <label class="f">Eixo<input class="num" id="t_eixo" inputmode="numeric" placeholder="0–180"></label>
-    </div>
-    <div class="actions" style="margin-top:14px"><button class="btn pri" id="t_go">Transpor</button></div>
-    <div class="tout" id="t_out"></div>
-  </div>`;
-  document.getElementById("t_go").onclick=()=>{
-    const esf=parseFloat(document.getElementById("t_esf").value);
-    const cil=parseFloat(document.getElementById("t_cil").value);
-    const eixo=parseInt(document.getElementById("t_eixo").value);
-    const out=document.getElementById("t_out");
-    if(isNaN(esf)||isNaN(cil)||isNaN(eixo)||eixo<0||eixo>180){out.className="tout show";out.innerHTML="Preencha os três campos com valores válidos (eixo 0–180).";return;}
-    const nEsf=(esf+cil), nCil=-cil; let nEixo=eixo+90; if(nEixo>180)nEixo-=90*2>0?90:0; nEixo=(eixo+90)%180; if(nEixo===0)nEixo=180;
-    const sg=n=>(n>0?"+":"")+n.toFixed(2);
-    out.className="tout show";
-    out.innerHTML=`Original: <b>${sg(esf)} ${sg(cil)} x ${eixo}°</b><br>Transposta: <b>${sg(nEsf)} ${sg(nCil)} x ${nEixo}°</b>`;
-  };
-}
+/* transpose */
+function drawFerr(){document.getElementById("view").innerHTML=`<div class="ptitle"><h1>Transposição</h1><span class="meta">± notação</span></div>
+  <div class="card"><p class="hint">Converte a receita quando a lente tem limite de faixa por sinal.</p>
+    <div class="fgrid f2"><label class="field"><span class="flab">Esférico</span><input id="t_esf" inputmode="decimal" placeholder="±0.00"></label>
+      <label class="field"><span class="flab">Cilíndrico</span><input id="t_cil" inputmode="decimal" placeholder="±0.00"></label></div>
+    <label class="field" style="margin-top:11px;max-width:180px"><span class="flab">Eixo</span><input id="t_eixo" inputmode="numeric" placeholder="0–180"></label>
+    <div style="margin-top:15px"><button class="btn pri" id="t_go" style="width:100%">Transpor</button></div>
+    <div class="tout" id="t_out"></div></div>`;
+  document.getElementById("t_go").onclick=()=>{const esf=parseFloat(document.getElementById("t_esf").value),cil=parseFloat(document.getElementById("t_cil").value),
+    eixo=parseInt(document.getElementById("t_eixo").value),out=document.getElementById("t_out");
+    if(isNaN(esf)||isNaN(cil)||isNaN(eixo)||eixo<0||eixo>180){out.className="tout show";out.textContent="Preencha os três campos (eixo 0–180).";return;}
+    const nEsf=esf+cil,nCil=-cil;let nEixo=(eixo+90)%180;if(nEixo===0)nEixo=180;const sg=n=>(n>0?"+":"")+n.toFixed(2);
+    out.className="tout show";out.innerHTML=`Original &nbsp;<b>${sg(esf)} ${sg(cil)} x ${eixo}°</b><br>Transposta &nbsp;<b>${sg(nEsf)} ${sg(nCil)} x ${nEixo}°</b>`;};}
 
-/* ---------- AJUSTES ---------- */
-function drawCfg(){
-  const v=document.getElementById("view");
-  v.innerHTML=`<div class="card">
-    <h2>Dados do consultor (MEI)</h2>
-    <p class="hint">Aparecem na OS impressa como identificação formal. O cliente do laboratório é você — a ferramenta só gera o documento.</p>
-    <div class="grid g2">
-      <label class="f">Nome / razão<input id="c_nome" value="${esc(S.config.nome)}"></label>
-      <label class="f">CNPJ<input id="c_cnpj" value="${esc(S.config.cnpj)}" placeholder="00.000.000/0001-00"></label>
-    </div>
-  </div>
-  <div class="card">
-    <h2>Numeração local</h2>
-    <p class="hint">Sua contagem pessoal, como no caderno. A próxima OS será a <b>#${S.counters.local}</b>. Ajuste se está continuando de outro número.</p>
-    <label class="f" style="max-width:200px">Próxima OS local (#)<input class="num" id="c_local" value="${S.counters.local}" inputmode="numeric"></label>
-    <div class="actions" style="margin-top:14px"><button class="btn sec" id="c_save">Salvar ajustes</button></div>
-    <p class="lgpd-note">Armazenamento local persistente neste MVP. No próximo passo, isto mapeia direto para o Firebase RTDB — a estrutura de dados já está no formato certo.</p>
-  </div>`;
-  document.getElementById("c_save").onclick=()=>{
-    S.config.nome=document.getElementById("c_nome").value.trim();
-    S.config.cnpj=document.getElementById("c_cnpj").value.trim();
-    const l=parseInt(document.getElementById("c_local").value);if(l>0)S.counters.local=l;
-    persist();paintWho();toast("Ajustes salvos.");
-  };
-}
+/* ajustes */
+function drawCfg(){document.getElementById("view").innerHTML=`<div class="ptitle"><h1>Ajustes</h1><span class="meta">MEI</span></div>
+  <div class="card"><div class="shead"><span class="n">01</span><span class="bar"></span><h2>Consultor (MEI)</h2></div>
+    <p class="hint">Aparecem na OS como identificação formal. O cliente do laboratório é você.</p>
+    <div class="fgrid f2"><label class="field"><span class="flab">Nome / razão</span><input id="c_nome" value="${esc(S.config.nome)}"></label>
+      <label class="field"><span class="flab">CNPJ</span><input id="c_cnpj" value="${esc(S.config.cnpj)}" placeholder="00.000.000/0001-00"></label></div></div>
+  <div class="card"><div class="shead"><span class="n">02</span><span class="bar"></span><h2>Numeração local</h2></div>
+    <p class="hint">Sua contagem pessoal. A próxima OS será a #${S.counters.local}.</p>
+    <label class="field" style="max-width:200px"><span class="flab">Próxima OS local (#)</span><input id="c_local" value="${S.counters.local}" inputmode="numeric"></label>
+    <div style="margin-top:14px"><button class="btn sec" id="c_save" style="max-width:220px">Salvar ajustes</button></div>
+    <p class="lgpd-note">Dados no navegador (localStorage), locais por aparelho. Sincronizar entre celulares/consultores é o próximo passo (Firebase) — a estrutura já está no formato para migrar.</p></div>`;
+  document.getElementById("c_save").onclick=()=>{S.config.nome=document.getElementById("c_nome").value.trim();
+    S.config.cnpj=document.getElementById("c_cnpj").value.trim();const l=parseInt(document.getElementById("c_local").value);if(l>0)S.counters.local=l;
+    persist();paintWho();toast("Ajustes salvos.");};}
 
-/* ---------- PRINT ---------- */
-function printOrdem(id,mode){
-  const o=S.ordens.find(x=>x.id===id);if(!o)return;
-  const c=S.clientes.find(x=>x.id===o.clienteId)||{};
-  const rxRow=e=>`<tr><th>${e}</th><td>${sgv(o.receita[e.toLowerCase()].esf)}</td><td>${sgv(o.receita[e.toLowerCase()].cil)}</td><td>${o.receita[e.toLowerCase()].eixo||"—"}</td><td>${o.receita[e.toLowerCase()].ad?sgv(o.receita[e.toLowerCase()].ad):"—"}</td></tr>`;
+/* print (sem telefone/endereço) */
+function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;const c=S.clientes.find(x=>x.id===o.clienteId)||{};
+  const rxRow=e=>{const r=o.receita[e.toLowerCase()];return `<tr><th>${e}</th><td>${sgv(r.esf)}</td><td>${sgv(r.cil)}</td><td>${r.eixo||"—"}</td><td>${r.ad?sgv(r.ad):"—"}</td></tr>`;};
   const trat=o.produto.tratam&&o.produto.tratam.length?o.produto.tratam.join(", "):"—";
   const title=mode==="recibo"?"Recibo / Orçamento":"Ordem de Serviço";
   const valorBlock=(mode==="recibo")?`<h3>Valor</h3><div class="prod" style="font-size:16px"><b>${o.valor?("R$ "+esc(o.valor)):"—"}</b></div>`:"";
   const medidas=`DNP OD ${o.medidas.dnpOD||"—"} / OE ${o.medidas.dnpOE||"—"} mm · Altura OD ${o.medidas.altOD||"—"} / OE ${o.medidas.altOE||"—"} mm`;
-  document.getElementById("printDoc").innerHTML=`
-   <div class="doc">
-     <div class="dh">
-       <div class="cnpj"><small>CNPJ MEI</small>${esc(S.config.cnpj||"—")}<div style="font-size:11px;font-weight:400">${esc(S.config.nome||"")}</div></div>
-       <div class="nums"><small>${title}</small><b>${fmtG(o.osGlobal)}</b><br>sua ref. #${o.osLocal}<br>${brDate(o.data)}</div>
-     </div>
-     <h3>Cliente</h3>
-     <div class="cli"><b>${esc(c.nome)}</b><br>${esc(c.contato||"")}${c.endereco?" · "+esc(c.endereco):""}</div>
-     <h3>Receita</h3>
-     <table class="rxp"><thead><tr><th></th><th>Esf.</th><th>Cil.</th><th>Eixo</th><th>Adição</th></tr></thead>
-       <tbody>${rxRow("OD")}${rxRow("OE")}</tbody></table>
+  document.getElementById("printDoc").innerHTML=`<div class="doc"><div class="dh">
+     <div class="cnpj"><small>CNPJ MEI</small>${esc(S.config.cnpj||"—")}<div style="font-size:11px;font-weight:400">${esc(S.config.nome||"")}</div></div>
+     <div class="nums"><small>${title}</small><b>${fmtG(o.osGlobal)}</b><br>sua ref. #${o.osLocal}<br>${brDate(o.data)}</div></div>
+     <h3>Cliente</h3><div class="cli"><b>${esc(c.nome)}</b></div>
+     <h3>Receita</h3><table class="rxp"><thead><tr><th></th><th>Esf.</th><th>Cil.</th><th>Eixo</th><th>Adição</th></tr></thead><tbody>${rxRow("OD")}${rxRow("OE")}</tbody></table>
      <div class="cli" style="margin-top:5px;font-size:11px">${medidas}</div>
-     <h3>Produto</h3>
-     <div class="prod">Armação: ${esc(o.produto.armacao||"—")}<br>
-       Lente: ${esc(o.produto.tipo||"—")} · ${esc(o.produto.indice||"—")} · tratamentos: ${esc(trat)}<br>
-       ${o.produto.obs?"Obs.: "+esc(o.produto.obs):""}</div>
-     ${valorBlock}
-     <div class="foot"><span>Status: ${esc((STATUS.find(s=>s[0]===o.status)||["",""])[1])}</span><span>Consentimento LGPD registrado</span></div>
-     <div class="sign">assinatura do cliente</div>
-   </div>`;
-  setTimeout(()=>window.print(),60);
-}
+     <h3>Produto</h3><div class="prod">Armação: ${esc(o.produto.armacao||"—")}<br>Lente: ${esc(o.produto.tipo||"—")} · ${esc(o.produto.indice||"—")} · tratamentos: ${esc(trat)}<br>${o.produto.obs?"Obs.: "+esc(o.produto.obs):""}</div>
+     ${valorBlock}<div class="foot"><span>Status: ${esc((STATUS.find(s=>s[0]===o.status)||["",""])[1])}</span><span>Consentimento LGPD registrado</span></div>
+     <div class="sign">assinatura do cliente</div></div>`;
+  setTimeout(()=>window.print(),70);}
 function sgv(x){if(x===""||x==null)return"—";const n=parseFloat(x);if(isNaN(n))return esc(x);return(n>0?"+":"")+n.toFixed(2);}
 
-/* ---------- boot ---------- */
-function paintWho(){document.getElementById("whoName").textContent=S.config.nome||"Configure o MEI";
-  document.getElementById("whoCnpj").textContent=S.config.cnpj||"";}
-function draw(){
-  if(current==="atend")drawAtend();
-  else if(current==="ordens")drawOrdens();
-  else if(current==="ferr")drawFerr();
-  else if(current==="cfg")drawCfg();
-}
-document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>nav(b.dataset.t));
-(async()=>{await load();paintWho();
-  if(!S.config.nome){current="cfg";document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t==="cfg"));}
-  draw();})();
+/* boot */
+function paintWho(){document.getElementById("whoName").textContent=S.config.nome||"Configurar";
+  document.getElementById("whoAv").textContent=initials(S.config.nome);}
+function draw(){if(current==="atend")drawAtend();else if(current==="ordens")drawOrdens();else if(current==="ferr")drawFerr();else if(current==="cfg")drawCfg();}
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>nav(b.dataset.t));
+loadState();paintWho();document.body.classList.add("atend");
+if(!S.config.nome){current="cfg";document.body.classList.remove("atend");document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t==="cfg"));}
+draw();
 </script>
+</body>
+</html>
