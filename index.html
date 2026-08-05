@@ -2,7 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Órbita — Atendimento &amp; OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,9 +21,13 @@
     --r:20px; --rf:15px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0}
+  html,body{margin:0;overscroll-behavior:none}
+  html{overflow-x:hidden}
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;
-    -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;letter-spacing:-.005em}
+    -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;letter-spacing:-.005em;
+    overflow-x:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  input,textarea,select{-webkit-user-select:text;user-select:text}
+  button,.rxcell,.chip,.mtab,.nav button,.tab,.icobtn{touch-action:manipulation}
   body.atend{--pb:150px} body{--pb:88px}
   #printDoc{display:none}
   .app{max-width:720px;margin:0 auto;padding:0 15px calc(var(--pb) + env(safe-area-inset-bottom))}
@@ -121,13 +127,14 @@
   .mbig .cur{font-family:var(--mono);font-size:46px;font-weight:600;color:var(--ink);letter-spacing:-.02em;line-height:1.1;min-height:50px}
   .mbig .lab{font-size:12px;color:var(--mut);margin-top:6px}
   .mwarn{color:var(--err);font-size:12.5px;text-align:center;min-height:18px;margin:7px 0 0}
-  .steps{display:flex;gap:10px;margin:14px 0 12px}
-  .steps button{flex:1;border:1px solid var(--line);background:#fff;border-radius:13px;min-height:54px;font-family:var(--mono);
-    font-size:15px;font-weight:600;color:var(--acc-d);cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .steps button:active{background:var(--acc-tint)}
+  .steps{display:flex;gap:10px;margin:16px 0 12px}
+  .steps button{flex:1;border:1px solid transparent;background:var(--acc-bg);border-radius:13px;min-height:60px;font-family:var(--mono);
+    font-size:16px;font-weight:600;color:var(--acc-d);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .steps button:active{background:#cfe4df}
+  .steps button.sgn{flex:0 0 34%;background:#fff;border-color:var(--line);color:var(--ink)}
   .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .pad button{border:1px solid var(--line);background:#fff;border-radius:14px;min-height:62px;font-family:var(--mono);
-    font-size:24px;font-weight:500;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pad button{border:1px solid var(--line);background:#fff;border-radius:14px;min-height:58px;font-family:var(--mono);
+    font-size:23px;font-weight:500;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
   .pad button:active{background:var(--surf2)}
   .pad button.sm{font-size:18px;color:var(--acc-d)}
   .pad button[disabled]{opacity:.28;pointer-events:none}
@@ -344,8 +351,14 @@ function nav(t){current=t;document.querySelectorAll("#nav button").forEach(b=>b.
 /* receita */
 const RX_FIELDS=["esf","cil","eixo","ad"];
 function blankRx(){return{od:{esf:"",cil:"",eixo:"",ad:""},oe:{esf:"",cil:"",eixo:"",ad:""}};}
-function splitSigned(v){v=(v||"").trim();if(v==="")return{sign:"-",mag:""};
-  if(v[0]==="-")return{sign:"-",mag:v.slice(1)};if(v[0]==="+")return{sign:"+",mag:v.slice(1)};return{sign:"+",mag:v};}
+function toMQ(v){if(v===""||v==null)return{sign:"+",mag:"",q:0};
+  const sign=v[0]==="-"?"-":"+";let num=Math.abs(parseFloat(v));if(isNaN(num))return{sign:"+",mag:"",q:0};
+  let mi=Math.floor(num),q=Math.round((num-mi)*100);q=[0,25,50,75,100].reduce((a,b)=>Math.abs(b-q)<Math.abs(a-q)?b:a,0);if(q===100){mi++;q=0;}
+  return{sign,mag:String(mi),q};}
+function mqEmpty(o){return o.mag===""&&o.q===0;}
+function mqNum(o){return parseInt(o.mag||"0")+o.q/100;}
+function mqVal(o,signed){if(mqEmpty(o))return"";const n=mqNum(o);return signed?((o.sign==="-"?"-":"+")+n.toFixed(2)):n.toFixed(2);}
+function mqDisp(o,signed){if(mqEmpty(o))return"\u2014";const n=mqNum(o);if(signed)return n===0?"0.00":(o.sign==="-"?"\u2212":"+")+n.toFixed(2);return "+"+n.toFixed(2);}
 const RX_LABEL={esf:"Esférico",cil:"Cilíndrico",eixo:"Eixo",ad:"Adição"};
 const RX_SHORT={esf:"Esf.",cil:"Cil.",eixo:"Eixo",ad:"Adição"};
 function formatDisp(f,v){if(v===""||v==null)return '<span class="ph">—</span>';
@@ -359,53 +372,54 @@ function refreshRxRows(){const el=document.getElementById("rxRows");if(el){el.in
 
 /* receita modal */
 let rxModal=null;
-function openRxModal(eye,field){const g=form.rx[eye],es=splitSigned(g.esf),cs=splitSigned(g.cil),adm=(g.ad||"").replace(/^\+/,"");
-  rxModal={eye,field,buf:{esf:{sign:es.sign,mag:es.mag},cil:{sign:cs.sign,mag:cs.mag},eixo:(g.eixo||""),ad:{mag:adm}}};
+function openRxModal(eye,field){const g=form.rx[eye],ad=toMQ(g.ad);
+  rxModal={eye,field,buf:{esf:toMQ(g.esf),cil:toMQ(g.cil),eixo:(g.eixo||""),ad:{mag:ad.mag,q:ad.q}}};
   document.getElementById("rxModal").hidden=false;document.body.style.overflow="hidden";renderRxModal();}
 function closeRxModal(commit){const m=document.getElementById("rxModal");
   if(commit&&rxModal){const b=rxModal.buf,eye=rxModal.eye;
-    form.rx[eye].esf=b.esf.mag===""?"":(b.esf.sign==="-"?"-":"+")+b.esf.mag;
-    form.rx[eye].cil=b.cil.mag===""?"":(b.cil.sign==="-"?"-":"+")+b.cil.mag;
-    form.rx[eye].eixo=b.eixo;form.rx[eye].ad=b.ad.mag===""?"":b.ad.mag;refreshRxRows();}
+    form.rx[eye].esf=mqVal(b.esf,true);form.rx[eye].cil=mqVal(b.cil,true);
+    form.rx[eye].eixo=b.eixo;form.rx[eye].ad=mqVal(b.ad,false);refreshRxRows();}
   rxModal=null;m.hidden=true;document.body.style.overflow="";}
 function rxBuf(){const f=rxModal.field;return (f==="esf"||f==="cil")?rxModal.buf[f]:(f==="ad"?rxModal.buf.ad:null);}
 function fmtBig(f){const b=rxModal.buf;
-  if(f==="esf"||f==="cil"){const t=b[f];return t.mag===""?"—":(t.sign==="-"?"\u2212":"+")+t.mag;}
-  if(f==="eixo")return b.eixo===""?"—":b.eixo+"\u00b0";
-  return b.ad.mag===""?"—":"+"+b.ad.mag;}
+  if(f==="eixo")return b.eixo===""?"\u2014":b.eixo+"\u00b0";
+  return mqDisp(f==="ad"?b.ad:b[f],f!=="ad");}
+function fmtBigFor(ff){return fmtBig(ff);}
 function rxKey(k){const f=rxModal.field,b=rxModal.buf;
   if(f==="eixo"){if(k==="back")b.eixo=b.eixo.slice(0,-1);
+    else if(k==="clear")b.eixo="";
     else if(/[0-9]/.test(k)){let n=(b.eixo==="0"?"":b.eixo)+k;if(n.length<=3&&parseInt(n)<=180)b.eixo=n;}renderRxModal();return;}
   const t=rxBuf();
-  if(k==="back")t.mag=t.mag.slice(0,-1);
-  else if(k==="."){if(!t.mag.includes("."))t.mag=(t.mag===""?"0":t.mag)+".";}
+  if(k==="back"){if(t.mag!=="")t.mag=t.mag.slice(0,-1);else t.q=0;}
+  else if(k==="clear"){t.mag="";t.q=0;}
   else if(k==="sign"){if(f==="esf"||f==="cil")t.sign=t.sign==="-"?"+":"-";}
-  else if(/[0-9]/.test(k)){if(t.mag.replace(".","").length<4)t.mag=(t.mag==="0"?"":t.mag)+k;}
+  else if(/[0-9]/.test(k)){const m=t.mag==="0"?"":t.mag;if(m.length<2)t.mag=m+k;}
   renderRxModal();}
-function rxStep(d){const f=rxModal.field,b=rxModal.buf;if(f==="eixo"){let n=(parseInt(b.eixo||"0")||0)+d*4;n=Math.max(0,Math.min(180,n));b.eixo=String(n);renderRxModal();return;}
-  const t=rxBuf();let cur=t.mag===""?0:((f!=="ad"&&t.sign==="-")?-1:1)*parseFloat(t.mag||"0");let nv=cur+d;if(f==="ad"&&nv<0)nv=0;
-  t.mag=Math.abs(nv).toFixed(2);if(f==="esf"||f==="cil")t.sign=nv<0?"-":"+";renderRxModal();}
+function rxStep(dir){const f=rxModal.field,b=rxModal.buf;
+  if(f==="eixo"){let n=(parseInt(b.eixo||"0")||0)+dir*5;n=Math.max(0,Math.min(180,n));b.eixo=String(n);renderRxModal();return;}
+  const t=rxBuf();let total=parseInt(t.mag||"0")*100+t.q+dir*25;if(total<0)total=0;
+  const mi=Math.floor(total/100);t.q=total-mi*100;t.mag=String(mi);renderRxModal();}
 function rxGoto(f){rxModal.field=f;renderRxModal();}
 function rxNav(dir){const i=RX_FIELDS.indexOf(rxModal.field)+dir;if(i>=0&&i<RX_FIELDS.length){rxModal.field=RX_FIELDS[i];renderRxModal();}}
 function rxWarn(){const f=rxModal.field,b=rxModal.buf;
-  if(f==="esf"||f==="cil"){const v=b[f].mag===""?0:parseFloat(b[f].mag);if(v>30)return "Fora da faixa — máximo 30 dioptrias";}
-  if(f==="ad"){const v=b.ad.mag===""?0:parseFloat(b.ad.mag);if(v>4)return "Adição costuma ir até +4,00";}
+  if((f==="esf"||f==="cil")&&mqNum(b[f])>30)return "Fora da faixa — máximo 30 dioptrias";
+  if(f==="ad"&&mqNum(b.ad)>4)return "Adição costuma ir até +4,00";
   return "";}
 function renderRxModal(){const f=rxModal.field,eye=rxModal.eye,idx=RX_FIELDS.indexOf(f);
-  const tabs=RX_FIELDS.map(ff=>{const val=fmtBigFor(ff);return `<button class="mtab ${ff===f?"on":""}" onclick="rxGoto('${ff}')"><span class="l">${RX_SHORT[ff]}</span><span class="v ${val==="—"?"ph":""}">${val}</span></button>`;}).join("");
-  const isSigned=f==="esf"||f==="cil",isAxis=f==="eixo",isAdd=f==="ad";
-  let steps="";
-  if(isSigned)steps=`<div class="steps"><button onclick="rxStep(-0.25)">\u2212 0,25</button><button onclick="rxKey('sign')">\u00b1 sinal</button><button onclick="rxStep(0.25)">+ 0,25</button></div>`;
-  else if(isAdd)steps=`<div class="steps"><button onclick="rxStep(-0.25)">\u2212 0,25</button><button onclick="rxStep(0.25)">+ 0,25</button></div>`;
-  else steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 4\u00b0</button><button onclick="rxStep(1)">+ 4\u00b0</button></div>`;
-  const dotBtn=`<button class="sm" onclick="rxKey('.')" ${isAxis?"disabled":""}>.</button>`;
+  const tabs=RX_FIELDS.map(ff=>{const val=fmtBigFor(ff);return `<button class="mtab ${ff===f?"on":""}" onclick="rxGoto('${ff}')"><span class="l">${RX_SHORT[ff]}</span><span class="v ${val==="\u2014"?"ph":""}">${val}</span></button>`;}).join("");
+  const isSigned=f==="esf"||f==="cil",isAxis=f==="eixo";
+  let steps;
+  if(isSigned)steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 0,25</button><button class="sgn" onclick="rxKey('sign')">\u00b1 sinal</button><button onclick="rxStep(1)">+ 0,25</button></div>`;
+  else if(isAxis)steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 5\u00b0</button><button onclick="rxStep(1)">+ 5\u00b0</button></div>`;
+  else steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 0,25</button><button onclick="rxStep(1)">+ 0,25</button></div>`;
   const digits=[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="rxKey('${n}')">${n}</button>`).join("");
-  const pad=`<div class="pad">${digits}${dotBtn}<button onclick="rxKey('0')">0</button><button class="sm" onclick="rxKey('back')">\u232B</button></div>`;
+  const pad=`<div class="pad">${digits}<button class="sm" onclick="rxKey('clear')">limpar</button><button onclick="rxKey('0')">0</button><button class="sm" onclick="rxKey('back')">\u232B</button></div>`;
+  const hint=isAxis?"grau · 0–180":"dioptria · passo 0,25";
   document.getElementById("rxModal").innerHTML=`
     <div class="mhd"><h3>Receita — <span>${eye.toUpperCase()}</span></h3><button class="x" onclick="closeRxModal(false)">\u00d7</button></div>
     <div class="mbody">
       <div class="mtabs">${tabs}</div>
-      <div class="mbig"><div class="cur">${fmtBig(f)}</div><div class="lab">${RX_LABEL[f]}${isSigned?" · dioptria":isAxis?" · graus (0–180)":" · dioptria"}</div></div>
+      <div class="mbig"><div class="cur">${fmtBig(f)}</div><div class="lab">${RX_LABEL[f]} · ${hint}</div></div>
       <div class="mwarn">${rxWarn()}</div>
       ${steps}
       ${pad}
@@ -414,7 +428,6 @@ function renderRxModal(){const f=rxModal.field,eye=rxModal.eye,idx=RX_FIELDS.ind
       <div class="mnav"><button onclick="rxNav(-1)" ${idx===0?"disabled":""}>\u2039 Anterior</button><button onclick="rxNav(1)" ${idx===RX_FIELDS.length-1?"disabled":""}>Próximo \u203a</button></div>
       <button class="btn pri" onclick="closeRxModal(true)">Confirmar ${eye.toUpperCase()}</button>
     </div></div>`;}
-function fmtBigFor(ff){const b=rxModal.buf;if(ff==="esf"||ff==="cil"){const t=b[ff];return t.mag===""?"—":(t.sign==="-"?"\u2212":"+")+t.mag;}if(ff==="eixo")return b.eixo===""?"—":b.eixo+"\u00b0";return b.ad.mag===""?"—":"+"+b.ad.mag;}
 function validRx(rx){const errs={};for(const eye of["od","oe"]){const e=rx[eye];
   for(const f of["esf","cil","ad"]){
     if(e[f]!==""&&isNaN(parseFloat(e[f])))errs[eye+f]="número";
