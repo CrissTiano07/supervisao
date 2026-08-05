@@ -136,13 +136,15 @@
   .pad button{border:1px solid var(--line);background:#fff;border-radius:14px;min-height:58px;font-family:var(--mono);
     font-size:23px;font-weight:500;color:var(--ink);cursor:pointer;-webkit-tap-highlight-color:transparent}
   .pad button:active{background:var(--surf2)}
+  .pad button.clr{background:var(--acc-bg);color:var(--acc-d);border-color:transparent;font-weight:600}
+  .pad button.clr:active{background:#cfe4df}
   .pad button.sm{font-size:18px;color:var(--acc-d)}
   .pad button[disabled]{opacity:.28;pointer-events:none}
   .mftr{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surf)}
   .mftr .in{max-width:520px;margin:0 auto}
-  .mnav{display:flex;gap:10px;margin-bottom:10px}
-  .mnav button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;min-height:46px;font-weight:600;color:var(--ink);cursor:pointer;font-size:14px;font-family:var(--sans)}
-  .mnav button[disabled]{opacity:.4;pointer-events:none}
+  .mnav{display:flex;gap:10px;margin:6px 0 4px}
+  .mnav button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;min-height:44px;font-weight:600;color:var(--mut);cursor:pointer;font-size:13.5px;font-family:var(--sans)}
+  .mnav button[disabled]{opacity:.35;pointer-events:none}
   .mftr .btn{width:100%}
   .rxfoot{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;
     font-family:var(--mono);font-size:11px;color:var(--mut)}
@@ -162,6 +164,9 @@
   .mtot .l{font-size:13px;color:var(--mut)} .mtot .v{font-family:var(--mono);font-size:16px;font-weight:600}
 
   /* chips */
+  .pstack{display:flex;flex-direction:column;gap:17px}
+  .subgroup{display:flex;flex-direction:column;gap:11px}
+  .subgroup .slabel{font-size:12.5px;color:var(--mut);font-weight:500}
   .chips{display:flex;flex-wrap:wrap;gap:9px}
   .chip{border:1px solid var(--line);background:#fff;border-radius:22px;padding:10px 16px;font-size:13.5px;
     color:var(--mut);cursor:pointer;user-select:none;min-height:42px;display:flex;align-items:center;gap:6px;font-weight:500}
@@ -413,7 +418,8 @@ function renderRxModal(){const f=rxModal.field,eye=rxModal.eye,idx=RX_FIELDS.ind
   else if(isAxis)steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 5\u00b0</button><button onclick="rxStep(1)">+ 5\u00b0</button></div>`;
   else steps=`<div class="steps"><button onclick="rxStep(-1)">\u2212 0,25</button><button onclick="rxStep(1)">+ 0,25</button></div>`;
   const digits=[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="rxKey('${n}')">${n}</button>`).join("");
-  const pad=`<div class="pad">${digits}<button class="sm" onclick="rxKey('clear')">limpar</button><button onclick="rxKey('0')">0</button><button class="sm" onclick="rxKey('back')">\u232B</button></div>`;
+  const pad=`<div class="pad">${digits}<button class="sm clr" onclick="rxKey('clear')">limpar</button><button onclick="rxKey('0')">0</button><button class="sm" onclick="rxKey('back')">\u232B</button></div>`;
+  const nav=`<div class="mnav"><button onclick="rxNav(-1)" ${idx===0?"disabled":""}>\u2039 Anterior</button><button onclick="rxNav(1)" ${idx===RX_FIELDS.length-1?"disabled":""}>Próximo \u203a</button></div>`;
   const hint=isAxis?"grau · 0–180":"dioptria · passo 0,25";
   document.getElementById("rxModal").innerHTML=`
     <div class="mhd"><h3>Receita — <span>${eye.toUpperCase()}</span></h3><button class="x" onclick="closeRxModal(false)">\u00d7</button></div>
@@ -421,11 +427,11 @@ function renderRxModal(){const f=rxModal.field,eye=rxModal.eye,idx=RX_FIELDS.ind
       <div class="mtabs">${tabs}</div>
       <div class="mbig"><div class="cur">${fmtBig(f)}</div><div class="lab">${RX_LABEL[f]} · ${hint}</div></div>
       <div class="mwarn">${rxWarn()}</div>
+      ${nav}
       ${steps}
       ${pad}
     </div>
     <div class="mftr"><div class="in">
-      <div class="mnav"><button onclick="rxNav(-1)" ${idx===0?"disabled":""}>\u2039 Anterior</button><button onclick="rxNav(1)" ${idx===RX_FIELDS.length-1?"disabled":""}>Próximo \u203a</button></div>
       <button class="btn pri" onclick="closeRxModal(true)">Confirmar ${eye.toUpperCase()}</button>
     </div></div>`;}
 function validRx(rx){const errs={};for(const eye of["od","oe"]){const e=rx[eye];
@@ -494,15 +500,19 @@ function drawAtend(){
 
   <div class="card">
     <div class="shead"><span class="n">04</span><span class="bar"></span><h2>Produto</h2></div>
-    <div class="fgrid">
-      <label class="field"><span class="flab">Armação</span><input id="p_arm" value="${esc(form.produto.armacao)}" placeholder="Marca / modelo"></label>
-      <label class="field sel"><span class="flab">Tipo de lente</span><select id="p_tipo"><option value="">—</option>${TIPOS.map(t=>`<option ${form.produto.tipo===t?"selected":""}>${t}</option>`).join("")}</select></label>
-      <label class="field sel"><span class="flab">Material e índice</span><select id="p_ind"><option value="">—</option>${INDICES.map(t=>`<option ${form.produto.indice===t?"selected":""}>${t}</option>`).join("")}</select></label>
+    <div class="pstack">
+      <div class="fgrid">
+        <label class="field"><span class="flab">Armação</span><input id="p_arm" value="${esc(form.produto.armacao)}" placeholder="Marca / modelo"></label>
+        <label class="field sel"><span class="flab">Tipo de lente</span><select id="p_tipo"><option value="">—</option>${TIPOS.map(t=>`<option ${form.produto.tipo===t?"selected":""}>${t}</option>`).join("")}</select></label>
+        <label class="field sel"><span class="flab">Material e índice</span><select id="p_ind"><option value="">—</option>${INDICES.map(t=>`<option ${form.produto.indice===t?"selected":""}>${t}</option>`).join("")}</select></label>
+      </div>
+      <div class="subgroup">
+        <span class="slabel">Tratamentos</span>
+        <div class="chips" id="tratChips">${TRATAM.map(t=>`<span class="chip ${form.produto.tratam.includes(t)?"on":""}" data-t="${t}">${t}</span>`).join("")}</div>
+      </div>
+      <label class="field"><span class="flab">Preço (opcional, p/ recibo)</span><input id="p_valor" value="${esc(form.valor)}" placeholder="R$" inputmode="decimal"></label>
+      <label class="field"><span class="flab">Observações</span><textarea id="p_obs" rows="2">${esc(form.produto.obs)}</textarea></label>
     </div>
-    <p class="hint" style="margin:15px 0 9px">Tratamentos</p>
-    <div class="chips" id="tratChips">${TRATAM.map(t=>`<span class="chip ${form.produto.tratam.includes(t)?"on":""}" data-t="${t}">${t}</span>`).join("")}</div>
-    <label class="field" style="margin-top:14px"><span class="flab">Preço (opcional, p/ recibo)</span><input id="p_valor" value="${esc(form.valor)}" placeholder="R$" inputmode="decimal"></label>
-    <label class="field" style="margin-top:11px"><span class="flab">Observações</span><textarea id="p_obs" rows="2">${esc(form.produto.obs)}</textarea></label>
   </div>
 
   <div class="card">
