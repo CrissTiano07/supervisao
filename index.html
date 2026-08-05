@@ -29,6 +29,8 @@
   input,textarea,select{-webkit-user-select:text;user-select:text}
   button,.rxcell,.chip,.mtab,.nav button,.tab,.icobtn{touch-action:manipulation}
   body.atend{--pb:150px} body{--pb:88px}
+  body.typing{--pb:20px}
+  body.typing .savebar,body.typing .nav{display:none}
   #printDoc{display:none}
   .app{max-width:720px;margin:0 auto;padding:0 15px calc(var(--pb) + env(safe-area-inset-bottom))}
 
@@ -674,6 +676,10 @@ function paintWho(){document.getElementById("whoName").textContent=S.config.nome
   document.getElementById("whoAv").textContent=initials(S.config.nome);}
 function draw(){if(current==="atend")drawAtend();else if(current==="ordens")drawOrdens();else if(current==="ferr")drawFerr();else if(current==="cfg")drawCfg();}
 document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>nav(b.dataset.t));
+let blurT=null;
+function isField(el){return el&&el.matches&&el.matches("input,textarea,select");}
+document.addEventListener("focusin",e=>{if(isField(e.target)){clearTimeout(blurT);document.body.classList.add("typing");}});
+document.addEventListener("focusout",e=>{if(isField(e.target)){clearTimeout(blurT);blurT=setTimeout(()=>{if(!isField(document.activeElement))document.body.classList.remove("typing");},120);}});
 
 function showLogin(){document.getElementById("app").style.display="none";document.getElementById("nav").style.display="none";document.getElementById("login").hidden=false;}
 async function startApp(){
