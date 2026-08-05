@@ -157,13 +157,21 @@
   .mhead{padding:11px 14px;color:var(--mut);font-size:11.5px;font-weight:500}
   .mhead span:first-child{grid-column:1/2}
   .mhead .h{text-align:right;padding-right:24px}
-  .mcell{display:flex;align-items:baseline;justify-content:flex-end;gap:5px;padding-right:6px}
-  .mcell input{border:none;background:transparent;text-align:right;font-family:var(--mono);font-size:18px;
-    font-weight:500;color:var(--ink);width:56px;padding:12px 0;min-height:48px}
-  .mcell input:focus{outline:none;background:var(--surf2);border-radius:8px}
-  .mcell .u{font-family:var(--mono);font-size:11px;color:var(--dim);width:18px;text-align:left}
+  .mcell{display:flex;align-items:baseline;justify-content:flex-end;gap:4px;padding:12px 6px 12px 0;min-height:52px;
+    border:none;background:transparent;cursor:pointer;font-family:var(--mono);border-radius:8px;-webkit-tap-highlight-color:transparent;width:100%}
+  .mcell:active{background:var(--surf2)}
+  .mcell.bad{background:var(--err-bg)}
+  .mcell .val{font-size:18px;font-weight:500;color:var(--ink)} .mcell .val.ph{color:var(--dim);font-weight:400}
+  .mcell .u{font-size:11px;color:var(--dim);width:18px;text-align:left}
   .mtot{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;background:var(--surf2)}
   .mtot .l{font-size:13px;color:var(--mut)} .mtot .v{font-family:var(--mono);font-size:16px;font-weight:600}
+  .optlist{display:flex;flex-direction:column;gap:8px}
+  .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;
+    border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px 16px;font-size:15px;font-weight:500;
+    color:var(--ink);cursor:pointer;min-height:52px;font-family:var(--sans);-webkit-tap-highlight-color:transparent}
+  .opt:active{background:var(--surf2)}
+  .opt.on{background:var(--acc-bg);border-color:transparent;color:var(--acc-d);font-weight:600}
+  .opt.on::after{content:"";width:15px;height:9px;border-left:2px solid var(--acc-d);border-bottom:2px solid var(--acc-d);transform:rotate(-45deg);flex:none;margin-bottom:3px}
 
   /* chips */
   .pstack{display:flex;flex-direction:column;gap:17px}
@@ -436,6 +444,56 @@ function renderRxModal(){const f=rxModal.field,eye=rxModal.eye,idx=RX_FIELDS.ind
     <div class="mftr"><div class="in">
       <button class="btn pri" onclick="closeRxModal(true)">Confirmar ${eye.toUpperCase()}</button>
     </div></div>`;}
+/* medições — modal-teclado (mm, passo 0,5) */
+const MEAS_FIELDS=["dnpOD","dnpOE","altOD","altOE"];
+const MEAS_LABEL={dnpOD:"DNP · OD",dnpOE:"DNP · OE",altOD:"Altura · OD",altOE:"Altura · OE"};
+const MEAS_SHORT={dnpOD:"DNP OD",dnpOE:"DNP OE",altOD:"Alt OD",altOE:"Alt OE"};
+function toMH(v){if(v===""||v==null)return{mag:"",h:0};let n=parseFloat(v);if(isNaN(n))return{mag:"",h:0};
+  let mi=Math.floor(n),h=Math.round((n-mi)*10);h=h>=8?(mi++,0):(h>=3?5:0);return{mag:String(mi),h};}
+function mhEmpty(o){return o.mag===""&&o.h===0;}
+function mhNum(o){return parseInt(o.mag||"0")+o.h/10;}
+function mhVal(o){return mhEmpty(o)?"":mhNum(o).toFixed(1);}
+function mhDisp(o){return mhEmpty(o)?"\u2014":mhNum(o).toFixed(1).replace(".",",");}
+function measDisp(v){if(v===""||v==null)return '<span class="val ph">\u2014</span>';return '<span class="val">'+esc(String(v).replace(".",","))+'</span>';}
+function mRowsHTML(){return ["OD","OE"].map(E=>{const e=E.toLowerCase();return `<div class="mrow"><span class="badge">${E}</span>`+
+  ["dnp","alt"].map(p=>`<button type="button" class="mcell" data-k="${p}${E}">${measDisp(form.medidas[p+E])}<span class="u">mm</span></button>`).join("")+`</div>`;}).join("");}
+function wireMeasCells(){document.querySelectorAll("#mRows .mcell").forEach(c=>c.onclick=()=>openMeasModal(c.dataset.k));}
+function refreshMeas(){const el=document.getElementById("mRows");if(el){el.innerHTML=mRowsHTML();wireMeasCells();}updateDP();}
+let measModal=null;
+function openMeasModal(field){const g=form.medidas,buf={};MEAS_FIELDS.forEach(k=>buf[k]=toMH(g[k]));
+  measModal={field,buf};document.getElementById("rxModal").hidden=false;document.body.style.overflow="hidden";renderMeasModal();}
+function closeMeasModal(commit){const m=document.getElementById("rxModal");
+  if(commit&&measModal){MEAS_FIELDS.forEach(k=>form.medidas[k]=mhVal(measModal.buf[k]));refreshMeas();}
+  measModal=null;m.hidden=true;document.body.style.overflow="";}
+function measKey(k){const t=measModal.buf[measModal.field];
+  if(k==="back"){if(t.mag!=="")t.mag=t.mag.slice(0,-1);else t.h=0;}
+  else if(k==="clear"){t.mag="";t.h=0;}
+  else if(/[0-9]/.test(k)){const m=t.mag==="0"?"":t.mag;if(m.length<2)t.mag=m+k;}
+  renderMeasModal();}
+function measStep(dir){const t=measModal.buf[measModal.field];let total=parseInt(t.mag||"0")*10+t.h+dir*5;if(total<0)total=0;
+  const mi=Math.floor(total/10);t.h=total-mi*10;t.mag=String(mi);renderMeasModal();}
+function measGoto(f){measModal.field=f;renderMeasModal();}
+function measNav(dir){const i=MEAS_FIELDS.indexOf(measModal.field)+dir;if(i>=0&&i<MEAS_FIELDS.length){measModal.field=MEAS_FIELDS[i];renderMeasModal();}}
+function renderMeasModal(){const f=measModal.field,idx=MEAS_FIELDS.indexOf(f);
+  const tabs=MEAS_FIELDS.map(ff=>{const v=mhDisp(measModal.buf[ff]);return `<button class="mtab ${ff===f?"on":""}" onclick="measGoto('${ff}')"><span class="l">${MEAS_SHORT[ff]}</span><span class="v ${v==="\u2014"?"ph":""}">${v}</span></button>`;}).join("");
+  const steps=`<div class="steps"><button onclick="measStep(-1)">\u2212 0,5</button><button onclick="measStep(1)">+ 0,5</button></div>`;
+  const digits=[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="measKey('${n}')">${n}</button>`).join("");
+  const pad=`<div class="pad">${digits}<button class="sm clr" onclick="measKey('clear')">limpar</button><button onclick="measKey('0')">0</button><button class="sm" onclick="measKey('back')">\u232B</button></div>`;
+  const nav=`<div class="mnav"><button onclick="measNav(-1)" ${idx===0?"disabled":""}>\u2039 Anterior</button><button onclick="measNav(1)" ${idx===MEAS_FIELDS.length-1?"disabled":""}>Próximo \u203a</button></div>`;
+  document.getElementById("rxModal").innerHTML=`
+    <div class="mhd"><h3>Medição — <span>${MEAS_SHORT[f]}</span></h3><button class="x" onclick="closeMeasModal(false)">\u00d7</button></div>
+    <div class="mbody">
+      <div class="mtabs">${tabs}</div>
+      <div class="mbig"><div class="cur">${mhDisp(measModal.buf[f])}<span style="font-size:20px;color:var(--mut)"> mm</span></div><div class="lab">${MEAS_LABEL[f]} · milímetro · passo 0,5</div></div>
+      <div class="mwarn"></div>
+      ${nav}
+      ${steps}
+      ${pad}
+    </div>
+    <div class="mftr"><div class="in">
+      <button class="btn pri" onclick="closeMeasModal(true)">Confirmar medição</button>
+    </div></div>`;}
+
 function validRx(rx){const errs={};for(const eye of["od","oe"]){const e=rx[eye];
   for(const f of["esf","cil","ad"]){
     if(e[f]!==""&&isNaN(parseFloat(e[f])))errs[eye+f]="número";
@@ -493,9 +551,7 @@ function drawAtend(){
     <div class="shead"><span class="n">03</span><span class="bar"></span><h2>Medições</h2></div>
     <div class="mtable">
       <div class="mrow mhead"><span>Olho</span><span class="h">DNP</span><span class="h">Altura óptica</span></div>
-      ${["OD","OE"].map(E=>{const e=E.toLowerCase();return `<div class="mrow"><span class="badge">${E}</span>
-        <div class="mcell"><input class="md" data-k="dnp${E}" value="${esc(form.medidas["dnp"+E])}" inputmode="decimal" placeholder="—"><span class="u">mm</span></div>
-        <div class="mcell"><input class="md" data-k="alt${E}" value="${esc(form.medidas["alt"+E])}" inputmode="decimal" placeholder="—"><span class="u">mm</span></div></div>`;}).join("")}
+      <div id="mRows">${mRowsHTML()}</div>
       <div class="mtot"><span class="l">DP total</span><span class="v" id="dpTotal">—</span></div>
     </div>
   </div>
@@ -503,10 +559,14 @@ function drawAtend(){
   <div class="card">
     <div class="shead"><span class="n">04</span><span class="bar"></span><h2>Produto</h2></div>
     <div class="pstack">
-      <div class="fgrid">
-        <label class="field"><span class="flab">Armação</span><input id="p_arm" value="${esc(form.produto.armacao)}" placeholder="Marca / modelo"></label>
-        <label class="field sel"><span class="flab">Tipo de lente</span><select id="p_tipo"><option value="">—</option>${TIPOS.map(t=>`<option ${form.produto.tipo===t?"selected":""}>${t}</option>`).join("")}</select></label>
-        <label class="field sel"><span class="flab">Material e índice</span><select id="p_ind"><option value="">—</option>${INDICES.map(t=>`<option ${form.produto.indice===t?"selected":""}>${t}</option>`).join("")}</select></label>
+      <label class="field"><span class="flab">Armação</span><input id="p_arm" value="${esc(form.produto.armacao)}" placeholder="Marca / modelo"></label>
+      <div class="subgroup">
+        <span class="slabel">Tipo de lente</span>
+        <div class="chips" id="tipoChips">${TIPOS.map(t=>`<span class="chip ${form.produto.tipo===t?"on":""}" data-v="${esc(t)}">${t}</span>`).join("")}</div>
+      </div>
+      <div class="subgroup">
+        <span class="slabel">Material e índice</span>
+        <div class="optlist" id="indList">${INDICES.map(t=>`<button type="button" class="opt ${form.produto.indice===t?"on":""}" data-v="${esc(t)}">${t}</button>`).join("")}</div>
       </div>
       <div class="subgroup">
         <span class="slabel">Tratamentos</span>
@@ -540,11 +600,14 @@ function drawAtend(){
   if(form.clienteId){const m=S.clientes.find(c=>c.id===form.clienteId);if(m)drawHist(m);}
 
   wireRxCells();
-  document.querySelectorAll(".md").forEach(i=>i.addEventListener("input",e=>{form.medidas[e.target.dataset.k]=e.target.value;updateDP();}));
-  updateDP();
+  wireMeasCells();updateDP();
   document.getElementById("p_arm").addEventListener("input",e=>form.produto.armacao=e.target.value);
-  document.getElementById("p_tipo").addEventListener("change",e=>form.produto.tipo=e.target.value);
-  document.getElementById("p_ind").addEventListener("change",e=>form.produto.indice=e.target.value);
+  document.querySelectorAll("#tipoChips .chip").forEach(ch=>ch.addEventListener("click",()=>{
+    const v=ch.dataset.v;form.produto.tipo=(form.produto.tipo===v)?"":v;
+    document.querySelectorAll("#tipoChips .chip").forEach(x=>x.classList.toggle("on",x.dataset.v===form.produto.tipo));}));
+  document.querySelectorAll("#indList .opt").forEach(op=>op.addEventListener("click",()=>{
+    const v=op.dataset.v;form.produto.indice=(form.produto.indice===v)?"":v;
+    document.querySelectorAll("#indList .opt").forEach(x=>x.classList.toggle("on",x.dataset.v===form.produto.indice));}));
   document.getElementById("p_valor").addEventListener("input",e=>form.valor=e.target.value);
   document.getElementById("p_obs").addEventListener("input",e=>form.produto.obs=e.target.value);
   document.querySelectorAll("#tratChips .chip").forEach(ch=>ch.addEventListener("click",()=>{
