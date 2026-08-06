@@ -242,22 +242,53 @@
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   /* print */
-  #printDoc{color:#000;font-family:var(--sans)}
-  .doc{width:23cm;max-width:100%;padding:.7cm .9cm;border:1px solid #000}
-  .doc .dh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #000;padding-bottom:8px}
-  .doc .cnpj{font-size:20px;font-weight:700}
-  .doc .cnpj small{display:block;font-size:10px;font-weight:400;letter-spacing:.12em;text-transform:uppercase}
-  .doc .nums{text-align:right;font-family:var(--mono);font-size:12px;line-height:1.5}
-  .doc .nums b{font-size:15px}
-  .doc h3{font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:12px 0 5px;border-bottom:1px solid #999;padding-bottom:2px}
-  .doc .cli{font-size:14px;line-height:1.5}
-  .doc .rxp{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px;margin-top:3px}
-  .doc .rxp th,.doc .rxp td{border:1px solid #000;padding:5px 8px;text-align:center}
-  .doc .rxp thead th{background:#eee;font-size:10px;text-transform:uppercase}
-  .doc .prod{font-size:12px;line-height:1.6}
-  .doc .foot{margin-top:14px;display:flex;justify-content:space-between;font-size:11px}
-  .doc .sign{margin-top:26px;border-top:1px solid #000;width:7cm;text-align:center;font-size:10px;padding-top:3px}
-  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block} @page{margin:1cm} }
+  #printDoc{color:#111;font-family:var(--sans)}
+  .doc{width:100%;padding:0}
+  .doc .head{display:flex;justify-content:space-between;align-items:flex-start}
+  .doc .brand{display:flex;gap:11px;align-items:center}
+  .doc .seal{width:44px;height:44px;flex:none}
+  .doc .wm{font-size:21px;font-weight:800;letter-spacing:.14em}
+  .doc .tag{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:#555;margin-top:1px}
+  .doc .doctype{text-align:right;line-height:1.15}
+  .doc .dt{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#555}
+  .doc .num{font-family:var(--mono);font-size:22px;font-weight:700}
+  .doc .rsub{font-family:var(--mono);font-size:10.5px;color:#555}
+  .doc .rulepair{border-top:3px solid #111;border-bottom:1px solid #111;height:3px;margin-top:9px}
+  .doc .metarow{display:flex;justify-content:space-between;gap:16px;margin-top:11px}
+  .doc .lbl{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#888;margin-bottom:3px}
+  .doc .emit{font-size:12px;line-height:1.5}
+  .doc .emit b{font-size:13.5px}
+  .doc .codebox{flex:none;width:2.5cm;height:2.5cm;border:1px dashed #bbb;border-radius:4px;display:flex;
+    align-items:center;justify-content:center;text-align:center;font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:#bbb;padding:6px}
+  .doc .sec{margin-top:13px}
+  .doc .sec>.lbl{border-bottom:1px solid #bbb;padding-bottom:3px;margin-bottom:6px}
+  .doc .cliente{font-size:15px;font-weight:600}
+  .doc .rxp{width:100%;border-collapse:collapse;margin-top:2px}
+  .doc .rxp th,.doc .rxp td{border:1px solid #111;text-align:center;padding:7px 6px}
+  .doc .rxp thead th{font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;background:#f2f2f2}
+  .doc .rxp tbody th{width:1.7cm;font-family:var(--mono);font-weight:700;font-size:14px;background:#f7f7f7}
+  .doc .rxp tbody td{font-family:var(--mono);font-size:16px;font-weight:600}
+  .doc .med{display:flex;gap:24px;font-size:12px;margin-top:2px;flex-wrap:wrap}
+  .doc .med .mk{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#888;margin-right:6px}
+  .doc .med .mv{font-family:var(--mono);font-size:14px;font-weight:600}
+  .doc .prod{font-size:12.5px;line-height:1.65}
+  .doc .prod .k{color:#555}
+  .doc .lab{border:1px solid #111;margin-top:14px}
+  .doc .labh{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;background:#111;color:#fff;padding:4px 8px}
+  .doc .labg{display:grid;grid-template-columns:1fr 1fr}
+  .doc .lcell{padding:8px 10px 5px;border-top:1px solid #111}
+  .doc .lcell:nth-child(odd){border-right:1px solid #111}
+  .doc .ck{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#888}
+  .doc .cline{border-bottom:1px solid #bbb;height:15px;margin-top:6px}
+  .doc .foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:16px}
+  .doc .consent{font-size:9.5px;color:#555;max-width:9cm;line-height:1.5}
+  .doc .sign{text-align:center;width:6cm}
+  .doc .sign .sl{border-top:1px solid #111;padding-top:3px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#555;margin-top:34px}
+  .doc .genby{text-align:center;font-size:7.5px;letter-spacing:.2em;text-transform:uppercase;color:#bbb;margin-top:15px}
+  .doc .valor{border:2px solid #111;display:flex;justify-content:space-between;align-items:center;padding:11px 15px;margin-top:13px}
+  .doc .valor .vk{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#555}
+  .doc .valor .vv{font-family:var(--mono);font-size:24px;font-weight:700}
+  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block;padding:1cm 1.2cm} @page{size:A4 portrait;margin:0} }
   /* login */
   .login{position:fixed;left:0;right:0;top:0;height:100vh;height:100dvh;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
   .login[hidden]{display:none}
@@ -336,13 +367,13 @@ const IC={save:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 let S=null, editingId=null, current="atend", form=null;
 
 /* --- camada de dados: único ponto que conhece o Firestore --- */
-function defaults(){return{config:{nome:"",cnpj:""},clientes:[],ordens:[],counters:{local:1}};}
+function defaults(){return{config:{nome:"",cnpj:"",contato:""},clientes:[],ordens:[],counters:{local:1}};}
 function docBase(){return db.collection("consultores").doc(user.uid);}
 async function repoLoadAll(){
   const base=docBase(), cfg=await base.get();
   if(cfg.exists){const d=cfg.data();S={config:d.config||{},counters:d.counters||{local:1},clientes:[],ordens:[]};}
   else{S=defaults();S.config.nome=user.displayName||"";await base.set({config:S.config,counters:S.counters});}
-  S.config=Object.assign({nome:"",cnpj:""},S.config);S.counters=Object.assign({local:1},S.counters);
+  S.config=Object.assign({nome:"",cnpj:"",contato:""},S.config);S.counters=Object.assign({local:1},S.counters);
   const cs=await base.collection("clientes").get();S.clientes=cs.docs.map(x=>x.data());
   const os=await base.collection("ordens").get();S.ordens=os.docs.map(x=>x.data());
 }
@@ -702,7 +733,8 @@ function drawCfg(){document.getElementById("view").innerHTML=`<div class="ptitle
   <div class="card"><div class="shead"><span class="n">01</span><span class="bar"></span><h2>Consultor (MEI)</h2></div>
     <p class="hint">Aparecem na OS como identificação formal. O cliente do laboratório é você.</p>
     <div class="fgrid f2"><label class="field"><span class="flab">Nome / razão</span><input id="c_nome" value="${esc(S.config.nome)}"></label>
-      <label class="field"><span class="flab">CNPJ</span><input id="c_cnpj" value="${esc(S.config.cnpj)}" placeholder="00.000.000/0001-00"></label></div></div>
+      <label class="field"><span class="flab">CNPJ</span><input id="c_cnpj" value="${esc(S.config.cnpj)}" placeholder="00.000.000/0001-00"></label></div>
+    <label class="field" style="margin-top:11px"><span class="flab">Telefone / WhatsApp</span><input id="c_contato" type="tel" value="${esc(S.config.contato)}" placeholder="(85) 9 0000-0000"></label></div>
   <div class="card"><div class="shead"><span class="n">02</span><span class="bar"></span><h2>Numeração</h2></div>
     <p class="hint">Sua contagem pessoal. A próxima OS será a #${S.counters.local}.</p>
     <label class="field" style="max-width:200px"><span class="flab">Próxima OS (#)</span><input id="c_local" value="${S.counters.local}" inputmode="numeric"></label>
@@ -711,28 +743,68 @@ function drawCfg(){document.getElementById("view").innerHTML=`<div class="ptitle
     <p class="hint">Conectado como ${esc((user&&user.email)||"—")}. Dados na nuvem (Firestore · São Paulo), sincronizados entre seus aparelhos.</p>
     <button class="btn ghost" id="c_out" style="justify-content:flex-start;padding-left:0">Sair da conta</button></div>`;
   document.getElementById("c_save").onclick=()=>{S.config.nome=document.getElementById("c_nome").value.trim();
-    S.config.cnpj=document.getElementById("c_cnpj").value.trim();const l=parseInt(document.getElementById("c_local").value);if(l>0)S.counters.local=l;
+    S.config.cnpj=document.getElementById("c_cnpj").value.trim();S.config.contato=document.getElementById("c_contato").value.trim();const l=parseInt(document.getElementById("c_local").value);if(l>0)S.counters.local=l;
     saveConsultor();paintWho();toast("Ajustes salvos.");};
   document.getElementById("c_out").onclick=()=>auth.signOut();}
 
-/* print (sem telefone/endereço) */
-function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;const c=S.clientes.find(x=>x.id===o.clienteId)||{};
-  const rxRow=e=>{const r=o.receita[e.toLowerCase()];return `<tr><th>${e}</th><td>${sgv(r.esf)}</td><td>${sgv(r.cil)}</td><td>${r.eixo||"—"}</td><td>${r.ad?sgv(r.ad):"—"}</td></tr>`;};
+/* print — layout Órbita (papel + PDF). Cliente: só nome (minimização). */
+const SEAL='<svg class="seal" viewBox="0 0 48 48" fill="none" stroke="#111" stroke-width="2"><circle cx="24" cy="24" r="20"/><circle cx="24" cy="24" r="12" stroke-dasharray="2 3"/><circle cx="24" cy="24" r="4.2" fill="#111" stroke="none"/><path d="M24 2v6M24 40v6M2 24h6M40 24h6"/></svg>';
+function nBR(x){if(x===""||x==null)return null;const n=parseFloat(x);return isNaN(n)?null:n;}
+function sgBR(x){const n=nBR(x);if(n===null)return null;return (n>0?"+":n<0?"\u2212":"")+Math.abs(n).toFixed(2).replace(".",",");}
+function mmBR(x){const n=nBR(x);return n===null?"—":n.toFixed(1).replace(".",",");}
+function rxRowHTML(o,E){const r=o.receita[E.toLowerCase()],esf=sgBR(r.esf),cil=sgBR(r.cil);
+  const semGrau=esf===null&&cil===null;
+  if(semGrau)return `<tr><th>${E}</th><td colspan="4" class="plano" style="font-family:var(--sans);color:#555;font-weight:600">Sem correção</td></tr>`;
+  const cilTxt=cil===null?`<span style="color:#888">plano</span>`:cil;
+  const eixoTxt=(cil!==null&&r.eixo!=="")?r.eixo+"\u00b0":"—";
+  const adTxt=sgBR(r.ad)||"—";
+  return `<tr><th>${E}</th><td>${esf===null?'<span style="color:#888">plano</span>':esf}</td><td>${cilTxt}</td><td>${eixoTxt}</td><td>${adTxt}</td></tr>`;}
+
+function headHTML(o,title){return `<div class="head">
+    <div class="brand">${SEAL}<div><div class="wm">ÓRBITA</div><div class="tag">Sistema de atendimento óptico</div></div></div>
+    <div class="doctype"><div class="dt">${title}</div><div class="num">${fmtG(o.num)}</div><div class="rsub">ref. #${o.num} · ${brDate(o.data)}</div></div>
+  </div><div class="rulepair"></div>`;}
+function emitHTML(withCode){const contato=S.config.contato?("Tel / WhatsApp: "+esc(S.config.contato)):"";
+  return `<div class="metarow"><div class="emit"><div class="lbl">Emitente (MEI)</div>
+      <b>${esc(S.config.nome||"—")}</b><br>CNPJ ${esc(S.config.cnpj||"—")}${contato?"<br>"+contato:""}</div>
+    ${withCode?'<div class="codebox">espaço reservado · código (futuro)</div>':""}</div>`;}
+
+function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;const c=S.clientes.find(x=>x.id===o.clienteId)||{nome:"—"};
   const trat=o.produto.tratam&&o.produto.tratam.length?o.produto.tratam.join(", "):"—";
-  const title=mode==="recibo"?"Recibo / Orçamento":"Ordem de Serviço";
-  const valorBlock=(mode==="recibo")?`<h3>Valor</h3><div class="prod" style="font-size:16px"><b>${o.valor?("R$ "+esc(o.valor)):"—"}</b></div>`:"";
-  const medidas=`DNP OD ${o.medidas.dnpOD||"—"} / OE ${o.medidas.dnpOE||"—"} mm · Altura OD ${o.medidas.altOD||"—"} / OE ${o.medidas.altOE||"—"} mm`;
-  document.getElementById("printDoc").innerHTML=`<div class="doc"><div class="dh">
-     <div class="cnpj"><small>CNPJ MEI</small>${esc(S.config.cnpj||"—")}<div style="font-size:11px;font-weight:400">${esc(S.config.nome||"")}</div></div>
-     <div class="nums"><small>${title}</small><b>${fmtG(o.num)}</b><br>sua ref. #${o.num}<br>${brDate(o.data)}</div></div>
-     <h3>Cliente</h3><div class="cli"><b>${esc(c.nome)}</b></div>
-     <h3>Receita</h3><table class="rxp"><thead><tr><th></th><th>Esf.</th><th>Cil.</th><th>Eixo</th><th>Adição</th></tr></thead><tbody>${rxRow("OD")}${rxRow("OE")}</tbody></table>
-     <div class="cli" style="margin-top:5px;font-size:11px">${medidas}</div>
-     <h3>Produto</h3><div class="prod">Armação: ${esc(o.produto.armacao||"—")}<br>Lente: ${esc(o.produto.tipo||"—")} · ${esc(o.produto.indice||"—")} · tratamentos: ${esc(trat)}<br>${o.produto.obs?"Obs.: "+esc(o.produto.obs):""}</div>
-     ${valorBlock}<div class="foot"><span>Status: ${esc((STATUS.find(s=>s[0]===o.status)||["",""])[1])}</span><span>Consentimento LGPD registrado</span></div>
-     <div class="sign">assinatura do cliente</div></div>`;
+  const tipo=o.produto.tipo?o.produto.tipo.charAt(0).toUpperCase()+o.produto.tipo.slice(1):"—";
+  const receita=`<div class="sec"><div class="lbl">Receita</div>
+     <table class="rxp"><thead><tr><th></th><th>Esférico</th><th>Cilíndrico</th><th>Eixo</th><th>Adição</th></tr></thead>
+     <tbody>${rxRowHTML(o,"OD")}${rxRowHTML(o,"OE")}</tbody></table></div>`;
+  const status=esc((STATUS.find(s=>s[0]===o.status)||["",""])[1]);
+  let html;
+  if(mode==="recibo"){
+    html=`<div class="doc">${headHTML(o,"Recibo / Orçamento")}${emitHTML(false)}
+      <div class="sec"><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
+      ${receita}
+      <div class="sec"><div class="lbl">Produto</div><div class="prod"><span class="k">Armação:</span> ${esc(o.produto.armacao||"—")} &nbsp;·&nbsp; <span class="k">Lente:</span> ${tipo} · ${esc(o.produto.indice||"—")}<br><span class="k">Tratamentos:</span> ${esc(trat)}</div></div>
+      <div class="valor"><span class="vk">Valor total</span><span class="vv">${o.valor?("R$ "+esc(o.valor)):"—"}</span></div>
+      <div class="foot"><div class="consent">Obrigado pela preferência.<br>Consentimento LGPD registrado em ${brDate(o.data)}.</div>
+        <div class="sign"><div class="sl">Assinatura do cliente</div></div></div>
+      <div class="genby">documento gerado por Órbita</div></div>`;
+  }else{
+    const med=`<div class="sec"><div class="lbl">Medições</div><div class="med">
+        <div class="m"><span class="mk">DNP</span><span class="mv">OD ${mmBR(o.medidas.dnpOD)} · OE ${mmBR(o.medidas.dnpOE)} mm</span></div>
+        <div class="m"><span class="mk">Altura</span><span class="mv">OD ${mmBR(o.medidas.altOD)} · OE ${mmBR(o.medidas.altOE)} mm</span></div></div></div>`;
+    html=`<div class="doc">${headHTML(o,"Ordem de Serviço")}${emitHTML(true)}
+      <div class="sec"><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
+      ${receita}${med}
+      <div class="sec"><div class="lbl">Produto</div><div class="prod"><span class="k">Armação:</span> ${esc(o.produto.armacao||"—")}<br><span class="k">Lente:</span> ${tipo} · ${esc(o.produto.indice||"—")}<br><span class="k">Tratamentos:</span> ${esc(trat)}${o.produto.obs?'<br><span class="k">Obs.:</span> '+esc(o.produto.obs):""}</div></div>
+      <div class="lab"><div class="labh">Uso do laboratório</div><div class="labg">
+        <div class="lcell"><div class="ck">Pedido interno nº</div><div class="cline"></div></div>
+        <div class="lcell"><div class="ck">Recebido em</div><div class="cline"></div></div>
+        <div class="lcell"><div class="ck">Previsão de entrega</div><div class="cline"></div></div>
+        <div class="lcell"><div class="ck">Observações</div><div class="cline"></div></div></div></div>
+      <div class="foot"><div class="consent">Status: ${status}.<br>Consentimento LGPD do titular registrado em ${brDate(o.data)} — tratamento restrito à confecção e ao histórico.</div>
+        <div class="sign"><div class="sl">Assinatura / carimbo do laboratório</div></div></div>
+      <div class="genby">documento gerado por Órbita</div></div>`;
+  }
+  document.getElementById("printDoc").innerHTML=html;
   setTimeout(()=>window.print(),70);}
-function sgv(x){if(x===""||x==null)return"—";const n=parseFloat(x);if(isNaN(n))return esc(x);return(n>0?"+":"")+n.toFixed(2);}
 
 /* boot */
 function paintWho(){document.getElementById("whoName").textContent=S.config.nome||"Configurar";
