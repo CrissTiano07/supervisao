@@ -291,7 +291,35 @@
   .doc .valor{border:2px solid #000;display:flex;justify-content:space-between;align-items:center;padding:9px 14px;margin-top:11px}
   .doc .valor .vk{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
   .doc .valor .vv{font-family:var(--mono);font-size:22px;font-weight:700}
-  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block;padding:.15cm 1.1cm .8cm} @page{size:A4 portrait;margin:8mm} }
+  @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block} }
+  /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
+  .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative}
+  .doc.os .seal{width:32px;height:32px}
+  .doc.os .wm{font-size:14px}
+  .doc.os .dash{font-size:12px}
+  .doc.os .oticnome{font-size:14px}
+  .doc.os .num{font-size:16px}
+  .doc.os .dt{font-size:8px}
+  .doc.os .rsub{font-size:8.5px}
+  .doc.os .idline{font-size:9px}
+  .doc.os .cliente{font-size:12px}
+  .doc.os .codebox{width:1.7cm;height:1.7cm;font-size:6px}
+  .doc.os .rxp thead th{font-size:8px}
+  .doc.os .rxp tbody th{font-size:11px;width:1.2cm}
+  .doc.os .rxp tbody td{font-size:13px}
+  .doc.os .rxp th,.doc.os .rxp td{padding:4px 4px}
+  .doc.os .med{font-size:10px}
+  .doc.os .med .mv{font-size:11px}
+  .doc.os .prod{font-size:10.5px}
+  .doc.os .prod .k{font-size:9.5px}
+  .doc.os .labh{font-size:7.5px}
+  .doc.os .ck{font-size:7.5px}
+  .doc.os .consent{font-size:8px;max-width:7cm}
+  .doc.os .sign{width:5cm}
+  .doc.os .sign .sl{font-size:7.5px;margin-top:22px}
+  .doc.os .genby{font-size:6.5px}
+  .doc.os .foldnote{position:absolute;top:50%;right:-.5cm;transform:rotate(90deg);transform-origin:center;
+    font-size:6px;letter-spacing:.2em;text-transform:uppercase;color:#aaa;white-space:nowrap}
   /* login */
   .login{position:fixed;left:0;right:0;top:0;height:100vh;height:100dvh;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
   .login[hidden]{display:none}
@@ -302,6 +330,7 @@
   .loginbox .btn{width:100%}
   .loginbox .fine{font-size:11.5px;color:var(--dim);margin-top:14px;line-height:1.5}
 </style>
+<style id="pagestyle"></style>
 </head>
 <body>
 <div class="app" id="app">
@@ -780,7 +809,7 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
   const status=esc((STATUS.find(s=>s[0]===o.status)||["",""])[1]);
   let html;
   if(mode==="recibo"){
-    html=`<div class="doc">${headHTML(o,"Recibo / Orçamento")}${idlineHTML()}
+    html=`<div class="doc recibo">${headHTML(o,"Recibo / Orçamento")}${idlineHTML()}
       <div class="sec"><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
       ${receita}
       <div class="sec"><div class="lbl">Produto</div><div class="prod"><span class="k">Armação:</span> ${esc(o.produto.armacao||"—")} &nbsp;·&nbsp; <span class="k">Lente:</span> ${tipo} · ${esc(o.produto.indice||"—")}<br><span class="k">Tratamentos:</span> ${esc(trat)}</div></div>
@@ -792,7 +821,7 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
     const med=`<div class="sec"><div class="med"><span class="lbl">Medições</span> &nbsp;
         <span class="mk">DNP</span><span class="mv">OD ${mmBR(o.medidas.dnpOD)} · OE ${mmBR(o.medidas.dnpOE)} mm</span><span class="sep"></span>
         <span class="mk">Altura</span><span class="mv">OD ${mmBR(o.medidas.altOD)} · OE ${mmBR(o.medidas.altOE)} mm</span></div></div>`;
-    html=`<div class="doc">${headHTML(o,"Ordem de Serviço")}${idlineHTML()}
+    html=`<div class="doc os">${headHTML(o,"Ordem de Serviço")}${idlineHTML()}
       <div class="headrow"><div><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
         <div class="codebox">código (futuro)</div></div>
       ${receita}${med}
@@ -804,8 +833,11 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
         <div class="lcell"><div class="ck">Observações</div><div class="cline"></div></div></div></div>
       <div class="foot"><div class="consent">Status: ${status}. Consentimento LGPD do titular registrado em ${brDate(o.data)} — tratamento restrito à confecção e ao histórico.</div>
         <div class="sign"><div class="sl">Assinatura / carimbo do laboratório</div></div></div>
-      <div class="genby">documento gerado por Órbita</div></div>`;
+      <div class="genby">documento gerado por Órbita</div><div class="foldnote">corte ou dobre aqui</div></div>`;
   }
+  document.getElementById("pagestyle").textContent = (mode==="recibo")
+    ? "@page{size:A4 portrait;margin:10mm}"
+    : "@page{size:A4 landscape;margin:8mm}";
   document.getElementById("printDoc").innerHTML=html;
   setTimeout(()=>window.print(),70);}
 
