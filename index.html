@@ -295,7 +295,10 @@
   /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
   .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative;display:flex;flex-direction:column}
   .doc.os .foot{margin-top:auto;padding-top:10px}
-  .doc.os .head{flex-wrap:nowrap;gap:4px 10px}
+  .doc.os .head{flex-wrap:nowrap;gap:10px;align-items:center}
+  .doc.os .brand{align-items:center;flex:1;min-width:0}
+  .doc.os .names{flex-wrap:wrap;align-items:baseline;row-gap:0}
+  .doc.os .doctype{flex:none}
   .doc.os .seal{width:38px;height:38px}
   .doc.os .wm{font-size:19px;letter-spacing:.08em}
   .doc.os .dash{font-size:16px}
@@ -307,6 +310,13 @@
   .doc.os .idline{font-size:9.5px}
   .doc.os .cliente{font-size:13px}
   .doc.os .codebox{width:1.15cm;height:1.15cm;font-size:5px;border:1px dashed #ccc;color:#c4c4c4;letter-spacing:.04em}
+  .doc.os .clibox{display:flex;border:1.5px solid #000;margin-top:8px}
+  .doc.os .clibox .clicell{flex:1;padding:5px 10px 6px;background:#fafafa}
+  .doc.os .clibox .codecell{width:2cm;border-left:1.5px solid #000;display:flex;align-items:center;justify-content:center;
+    text-align:center;font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:#bbb;line-height:1.6}
+  .doc.os .rxp tbody tr:nth-child(2) td{background:#f8f8f8}
+  .doc.os .ctab tbody tr:nth-child(2) td{background:#f8f8f8}
+  .doc.os .obsbox .lbl,.doc.os .tratline .lbl{display:block;margin-bottom:3px}
   .doc.os .headrow{margin-top:7px;align-items:center}
   .doc.os .obsbox{border:1.5px solid #000;margin-top:8px;padding:4px 8px 5px}
   .doc.os .obstext{font-size:10px;margin-top:2px;min-height:.6cm;white-space:pre-wrap}
@@ -869,8 +879,8 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
     const tratArr=(o.produto.tratam&&o.produto.tratam.length)?o.produto.tratam:[];
     const tratHTML=tratArr.length?tratArr.map(t=>`<span class="trt"><span class="box">\u2713</span>${esc(t)}</span>`).join(""):'<span style="color:#666">—</span>';
     const doc=`<div class="doc os">${headHTML(o,"Ordem de Serviço",`<div class="statuspill">${status}</div>`)}${idlineHTML()}
-      <div class="headrow"><div><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
-        <div class="codebox">código<br>QR</div></div>
+      <div class="clibox"><div class="clicell"><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
+        <div class="codecell">código<br>QR</div></div>
       ${receita}
       <div class="grid2">${centragem}${lentetab}</div>
       <div class="tratline"><span class="lbl">Tratamentos</span><div class="trats">${tratHTML}</div></div>
