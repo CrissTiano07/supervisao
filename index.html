@@ -317,11 +317,16 @@
   /* centragem + lente/armação lado a lado */
   .doc.os .grid2{display:flex;gap:8px;margin-top:9px;align-items:stretch}
   .doc.os .grid2>*{flex:1}
+  .doc.os .grid2>.ctab{flex:1.25}
   .doc.os .ctab,.doc.os .ptab{width:100%;border-collapse:collapse;height:100%}
   .doc.os .ctab th,.doc.os .ctab td,.doc.os .ptab th,.doc.os .ptab td{border:1.5px solid #000}
-  .doc.os .ctab thead th{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;background:#e6e6e6;padding:3px 4px}
-  .doc.os .ctab tbody th{font-family:var(--mono);font-weight:700;font-size:11px;background:#f4f4f4;text-align:center;width:.95cm;padding:4px 2px}
-  .doc.os .ctab tbody td{font-family:var(--mono);font-weight:800;font-size:15px;text-align:center;padding:4px 4px}
+  .doc.os .ctab thead th{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;background:#e6e6e6;padding:3px 3px}
+  .doc.os .ctab tbody th{font-family:var(--mono);font-weight:700;font-size:11px;background:#f4f4f4;text-align:center;width:.85cm;padding:4px 2px}
+  .doc.os .ctab tbody td{font-family:var(--mono);font-weight:800;font-size:14px;text-align:center;padding:4px 2px}
+  .doc.os .ctab .dptot{font-size:16px;vertical-align:middle;background:#fafafa}
+  .doc.os .statuspill{display:inline-block;background:#000;color:#fff;font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:3px;margin-top:5px}
+  .doc.os .signs{display:flex;gap:12px}
+  .doc.os .signs .sign{width:3.9cm}
   .doc.os .ptab th{text-align:left;font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;background:#f4f4f4;width:1.9cm;font-weight:700;padding:4px 6px}
   .doc.os .ptab td{font-size:11px;font-weight:600;padding:4px 6px}
   /* tratamentos */
@@ -344,6 +349,12 @@
   .doc.os .genby{font-size:6.5px}
   .doc.os .foldnote{position:absolute;top:50%;right:-.5cm;transform:rotate(90deg);transform-origin:center;
     font-size:6px;letter-spacing:.2em;text-transform:uppercase;color:#aaa;white-space:nowrap}
+  /* verso (metade direita) — reserva do QR de divulgação */
+  .ostwo{display:flex;align-items:stretch}
+  .osverso{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-left:1cm}
+  .osverso .versobox{border:1px dashed #ccc;border-radius:8px;width:6cm;height:6cm;display:flex;align-items:center;
+    justify-content:center;text-align:center;color:#bbb;font-size:9px;letter-spacing:.14em;text-transform:uppercase;line-height:2.1}
+  .osverso .versobrand{margin-top:14px;color:#bbb;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
   /* login */
   .login{position:fixed;left:0;right:0;top:0;height:100vh;height:100dvh;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
   .login[hidden]{display:none}
@@ -816,10 +827,10 @@ function rxRowHTML(o,E){const r=o.receita[E.toLowerCase()],esf=sgBR(r.esf),cil=s
   const adTxt=sgBR(r.ad)||"—";
   return `<tr><th>${E}</th><td>${esf===null?'<span style="color:#888">plano</span>':esf}</td><td>${cilTxt}</td><td>${eixoTxt}</td><td>${adTxt}</td></tr>`;}
 
-function headHTML(o,title){const otica=esc(S.config.nome||"—");
+function headHTML(o,title,extra){const otica=esc(S.config.nome||"—");
   return `<div class="head">
     <div class="brand">${SEAL}<div><div class="names"><span class="wm">ÓRBITA</span><span class="dash">—</span><span class="oticnome">${otica}</span></div><div class="tag">Sistema de atendimento óptico</div></div></div>
-    <div class="doctype"><div class="dt">${title}</div><div class="num">${fmtG(o.num)}</div><div class="rsub">ref. #${o.num} · ${brDate(o.data)}</div></div>
+    <div class="doctype"><div class="dt">${title}</div><div class="num">${fmtG(o.num)}</div><div class="rsub">ref. #${o.num} · ${brDate(o.data)}</div>${extra||""}</div>
   </div><div class="rulepair"></div>`;}
 function idlineHTML(){const contato=S.config.contato?(" &nbsp;·&nbsp; Tel / WhatsApp "+esc(S.config.contato)):"";
   return `<div class="idline">CNPJ ${esc(S.config.cnpj||"—")}${contato}</div>`;}
@@ -843,10 +854,12 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
       <div class="genby">documento gerado por Órbita</div></div>`;
   }else{
     const multi=/multifocal|bifocal|progress/i.test(o.produto.tipo||"")||!!sgBR(o.receita.od.ad)||!!sgBR(o.receita.oe.ad);
-    const centragem=`<table class="ctab"><thead><tr><th colspan="2">DNP</th><th colspan="2">Altura</th></tr></thead>
+    const dnpO=nBR(o.medidas.dnpOD),dnpE=nBR(o.medidas.dnpOE);
+    const dpTot=(dnpO!=null&&dnpE!=null)?(dnpO+dnpE).toFixed(1).replace(".",","):"—";
+    const centragem=`<table class="ctab"><thead><tr><th></th><th>DNP</th><th>Altura</th><th>DP&nbsp;total</th></tr></thead>
         <tbody>
-          <tr><th>OD</th><td>${mmBR(o.medidas.dnpOD)}</td><th>OD</th><td>${mmBR(o.medidas.altOD)}</td></tr>
-          <tr><th>OE</th><td>${mmBR(o.medidas.dnpOE)}</td><th>OE</th><td>${mmBR(o.medidas.altOE)}</td></tr>
+          <tr><th>OD</th><td>${mmBR(o.medidas.dnpOD)}</td><td>${mmBR(o.medidas.altOD)}</td><td rowspan="2" class="dptot">${dpTot}</td></tr>
+          <tr><th>OE</th><td>${mmBR(o.medidas.dnpOE)}</td><td>${mmBR(o.medidas.altOE)}</td></tr>
         </tbody></table>`;
     const lentetab=`<table class="ptab"><tbody>
           <tr><th>Lente</th><td>${tipo}${multi?' <b>· conferir altura</b>':''}</td></tr>
@@ -855,9 +868,9 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
         </tbody></table>`;
     const tratArr=(o.produto.tratam&&o.produto.tratam.length)?o.produto.tratam:[];
     const tratHTML=tratArr.length?tratArr.map(t=>`<span class="trt"><span class="box">\u2713</span>${esc(t)}</span>`).join(""):'<span style="color:#666">—</span>';
-    html=`<div class="doc os">${headHTML(o,"Ordem de Serviço")}${idlineHTML()}
+    const doc=`<div class="doc os">${headHTML(o,"Ordem de Serviço",`<div class="statuspill">${status}</div>`)}${idlineHTML()}
       <div class="headrow"><div><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
-        <div class="codebox">código (futuro)</div></div>
+        <div class="codebox">código<br>QR</div></div>
       ${receita}
       <div class="grid2">${centragem}${lentetab}</div>
       <div class="tratline"><span class="lbl">Tratamentos</span><div class="trats">${tratHTML}</div></div>
@@ -866,9 +879,11 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
         <div class="lc"><div class="ck">Controle interno</div><div class="cline"></div></div>
         <div class="lc"><div class="ck">Recebido em</div><div class="cline"></div></div>
         <div class="lc"><div class="ck">Previsão de entrega</div><div class="cline"></div></div></div></div>
-      <div class="foot"><div class="consent">Status: ${status}. Consentimento LGPD do titular registrado em ${brDate(o.data)} — tratamento restrito à confecção e ao histórico.</div>
-        <div class="sign"><div class="sl">Assinatura / carimbo do laboratório</div></div></div>
+      <div class="foot"><div class="consent">Consentimento LGPD do titular registrado em ${brDate(o.data)} — tratamento restrito à confecção e ao histórico do pedido.</div>
+        <div class="signs"><div class="sign"><div class="sl">Assinatura do cliente</div></div><div class="sign"><div class="sl">Assinatura / carimbo lab.</div></div></div></div>
       <div class="genby">documento gerado por Órbita</div><div class="foldnote">corte ou dobre aqui</div></div>`;
+    const verso=`<div class="osverso"><div class="versobox">Área reservada<br>QR de divulgação<br>(verso)</div><div class="versobrand">ÓRBITA — ${esc(S.config.nome||"")}</div></div>`;
+    html=`<div class="ostwo">${doc}${verso}</div>`;
   }
   document.getElementById("pagestyle").textContent = (mode==="recibo")
     ? "@page{size:A4 portrait;margin:10mm}"
