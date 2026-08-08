@@ -358,8 +358,6 @@
   .doc.os .sign{width:5cm}
   .doc.os .sign .sl{font-size:7.5px;margin-top:20px}
   .doc.os .genby{font-size:6.5px}
-  .doc.os .foldnote{position:absolute;top:50%;right:-.5cm;transform:rotate(90deg);transform-origin:center;
-    font-size:6px;letter-spacing:.2em;text-transform:uppercase;color:#aaa;white-space:nowrap}
   /* verso (metade direita) — reserva do QR de divulgação */
   .ostwo{display:flex;align-items:stretch}
   .osverso{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-left:1cm}
@@ -892,7 +890,7 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
         <div class="lc"><div class="ck">Previsão de entrega</div><div class="cline"></div></div></div></div>
       <div class="foot"><div class="consent">Consentimento LGPD do titular registrado em ${brDate(o.data)} — tratamento restrito à confecção e ao histórico do pedido.</div>
         <div class="signs"><div class="sign"><div class="sl">Assinatura do cliente</div></div><div class="sign"><div class="sl">Assinatura / carimbo lab.</div></div></div></div>
-      <div class="genby">documento gerado por Órbita</div><div class="foldnote">corte ou dobre aqui</div></div>`;
+      <div class="genby">documento gerado por Órbita</div></div>`;
     const verso=`<div class="osverso"><div class="versobox">Área reservada<br>QR de divulgação<br>(verso)</div><div class="versobrand">ÓRBITA — ${esc(S.config.nome||"")}</div></div>`;
     html=`<div class="ostwo">${doc}${verso}</div>`;
   }
