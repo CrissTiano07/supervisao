@@ -293,7 +293,8 @@
   .doc .valor .vv{font-family:var(--mono);font-size:22px;font-weight:700}
   @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block} }
   /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
-  .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative}
+  .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative;display:flex;flex-direction:column}
+  .doc.os .foot{margin-top:auto;padding-top:10px}
   .doc.os .head{flex-wrap:nowrap;gap:4px 10px}
   .doc.os .seal{width:38px;height:38px}
   .doc.os .wm{font-size:19px;letter-spacing:.08em}
@@ -305,7 +306,10 @@
   .doc.os .rsub{font-size:8.5px}
   .doc.os .idline{font-size:9.5px}
   .doc.os .cliente{font-size:13px}
-  .doc.os .codebox{width:1.6cm;height:1.6cm;font-size:6px}
+  .doc.os .codebox{width:1.15cm;height:1.15cm;font-size:5px;border:1px dashed #ccc;color:#c4c4c4;letter-spacing:.04em}
+  .doc.os .headrow{margin-top:7px;align-items:center}
+  .doc.os .obsbox{border:1.5px solid #000;margin-top:8px;padding:4px 8px 5px}
+  .doc.os .obstext{font-size:10px;margin-top:2px;min-height:.6cm;white-space:pre-wrap}
   .doc.os .rxp thead th{font-size:8px}
   .doc.os .rxp tbody th{font-size:11px;width:1.2cm}
   .doc.os .rxp tbody td{font-size:14px;font-weight:800}
@@ -325,9 +329,6 @@
   .doc.os .trats{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
   .doc.os .trt{display:inline-flex;align-items:center;gap:4px;border:1.5px solid #000;padding:2px 7px 2px 4px;font-size:10px;font-weight:700}
   .doc.os .trt .box{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;border:1.5px solid #000;font-size:10px;line-height:1;font-weight:900}
-  /* observações */
-  .doc.os .obsbox{border:1.5px solid #000;margin-top:8px;padding:4px 8px 6px}
-  .doc.os .obstext{font-size:10px;margin-top:2px;min-height:.85cm;white-space:pre-wrap}
   /* uso do laboratório — faixa compacta de 3 campos */
   .doc.os .lab3{border:1.5px solid #000;margin-top:8px}
   .doc.os .lab3 .labh{font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;background:#000;color:#fff;padding:3px 7px;font-weight:700}
