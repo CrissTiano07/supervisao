@@ -266,10 +266,10 @@
   .doc .codebox{flex:none;width:2.2cm;height:2.2cm;border:1px solid #999;border-radius:3px;display:flex;
     align-items:center;justify-content:center;text-align:center;font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:#999;padding:5px}
   .doc .rxp{width:100%;border-collapse:collapse;margin-top:4px}
-  .doc .rxp th,.doc .rxp td{border:1px solid #000;text-align:center;padding:6px 6px}
+  .doc .rxp th,.doc .rxp td{border:1.5px solid #000;text-align:center;padding:6px 6px}
   .doc .rxp thead th{font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;background:#eee}
   .doc .rxp tbody th{width:1.5cm;font-family:var(--mono);font-weight:700;font-size:13px;background:#f4f4f4}
-  .doc .rxp tbody td{font-family:var(--mono);font-size:16px;font-weight:700}
+  .doc .rxp tbody td{font-family:var(--mono);font-size:16px;font-weight:800}
   .doc .med{font-size:12px;margin-top:3px}
   .doc .med .mk{font-weight:700;text-transform:uppercase;font-size:9px;letter-spacing:.1em;margin-right:5px}
   .doc .med .mv{font-family:var(--mono);font-size:13px;font-weight:600}
@@ -306,7 +306,17 @@
   .doc.os .codebox{width:1.7cm;height:1.7cm;font-size:6px}
   .doc.os .rxp thead th{font-size:8px}
   .doc.os .rxp tbody th{font-size:11px;width:1.2cm}
-  .doc.os .rxp tbody td{font-size:13px}
+  .doc.os .rxp tbody td{font-size:14px;font-weight:800}
+  .doc.os .medbox{border:2px solid #000;padding:5px 8px;margin-top:8px;background:#f3f3f3}
+  .doc.os .medttl{font-size:8px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:3px}
+  .doc.os .malert{background:#000;color:#fff;padding:1px 6px;font-size:7.5px;letter-spacing:.06em;font-weight:700;margin-left:5px}
+  .doc.os .medvals{font-size:12px}
+  .doc.os .medvals b{font-family:var(--mono);font-weight:800;font-size:13px}
+  .doc.os .medvals .mk{font-weight:700;text-transform:uppercase;font-size:8px;letter-spacing:.08em;margin-right:3px}
+  .doc.os .tratline{margin-top:7px}
+  .doc.os .trats{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .doc.os .trt{display:inline-flex;align-items:center;gap:4px;border:1.5px solid #000;padding:2px 7px 2px 4px;font-size:10px;font-weight:700}
+  .doc.os .trt .box{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;border:1.5px solid #000;font-size:10px;line-height:1;font-weight:900}
   .doc.os .rxp th,.doc.os .rxp td{padding:4px 4px}
   .doc.os .med{font-size:10px}
   .doc.os .med .mv{font-size:11px}
@@ -818,14 +828,17 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
         <div class="sign"><div class="sl">Assinatura do cliente</div></div></div>
       <div class="genby">documento gerado por Órbita</div></div>`;
   }else{
-    const med=`<div class="sec"><div class="med"><span class="lbl">Medições</span> &nbsp;
-        <span class="mk">DNP</span><span class="mv">OD ${mmBR(o.medidas.dnpOD)} · OE ${mmBR(o.medidas.dnpOE)} mm</span><span class="sep"></span>
-        <span class="mk">Altura</span><span class="mv">OD ${mmBR(o.medidas.altOD)} · OE ${mmBR(o.medidas.altOE)} mm</span></div></div>`;
+    const multi=/multifocal|bifocal|progress/i.test(o.produto.tipo||"")||!!sgBR(o.receita.od.ad)||!!sgBR(o.receita.oe.ad);
+    const med=`<div class="medbox"><div class="medttl">Centragem${multi?'<span class="malert">Multifocal — conferir altura</span>':''}</div>
+        <div class="medvals"><span class="mk">DNP</span> <b>OD ${mmBR(o.medidas.dnpOD)} · OE ${mmBR(o.medidas.dnpOE)} mm</b> &nbsp;&nbsp; <span class="mk">Altura</span> <b>OD ${mmBR(o.medidas.altOD)} · OE ${mmBR(o.medidas.altOE)} mm</b></div></div>`;
+    const tratArr=(o.produto.tratam&&o.produto.tratam.length)?o.produto.tratam:[];
+    const tratHTML=tratArr.length?tratArr.map(t=>`<span class="trt"><span class="box">\u2713</span>${esc(t)}</span>`).join(""):'<span style="color:#666">—</span>';
     html=`<div class="doc os">${headHTML(o,"Ordem de Serviço")}${idlineHTML()}
       <div class="headrow"><div><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
         <div class="codebox">código (futuro)</div></div>
       ${receita}${med}
-      <div class="sec"><div class="lbl">Produto</div><div class="prod"><span class="k">Armação:</span> ${esc(o.produto.armacao||"—")} &nbsp; <span class="k">Lente:</span> ${tipo} · ${esc(o.produto.indice||"—")}<br><span class="k">Tratamentos:</span> ${esc(trat)}${o.produto.obs?'<br><span class="k">Obs.:</span> '+esc(o.produto.obs):""}</div></div>
+      <div class="sec"><div class="lbl">Produto</div><div class="prod"><span class="k">Armação:</span> ${esc(o.produto.armacao||"—")} &nbsp; <span class="k">Lente:</span> ${tipo} · ${esc(o.produto.indice||"—")}${o.produto.obs?'<br><span class="k">Obs.:</span> '+esc(o.produto.obs):""}</div>
+        <div class="tratline"><span class="lbl">Tratamentos</span><div class="trats">${tratHTML}</div></div></div>
       <div class="lab"><div class="labh">Uso do laboratório</div><div class="labg">
         <div class="lcell"><div class="ck">Controle interno</div><div class="cline"></div></div>
         <div class="lcell"><div class="ck">Recebido em</div><div class="cline"></div></div>
