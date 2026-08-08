@@ -243,7 +243,8 @@
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   /* print — via única, retrato compacto, rótulos sólidos */
-  #printDoc{color:#000;font-family:var(--sans)}
+  #printDoc{color:#000;font-family:var(--sans);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printDoc *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .doc{width:100%;padding:0}
   .doc .head{display:flex;justify-content:space-between;align-items:flex-start}
   .doc .brand{display:flex;gap:10px;align-items:center}
@@ -314,8 +315,8 @@
   .doc.os .clibox .clicell{flex:1;padding:5px 10px 6px;background:#fafafa}
   .doc.os .clibox .codecell{width:2cm;border-left:1.5px solid #000;display:flex;align-items:center;justify-content:center;
     text-align:center;font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:#bbb;line-height:1.6}
-  .doc.os .rxp tbody tr:nth-child(2) td{background:#f8f8f8}
-  .doc.os .ctab tbody tr:nth-child(2) td{background:#f8f8f8}
+  .doc.os .rxp tbody tr:nth-child(2) td{background:#eeeeee}
+  .doc.os .ctab tbody tr:nth-child(2) td{background:#eeeeee}
   .doc.os .obsbox .lbl,.doc.os .tratline .lbl{display:block;margin-bottom:3px}
   .doc.os .headrow{margin-top:7px;align-items:center}
   .doc.os .obsbox{border:1.5px solid #000;margin-top:8px;padding:4px 8px 5px}
