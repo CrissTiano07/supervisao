@@ -294,39 +294,52 @@
   @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block} }
   /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
   .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative}
-  .doc.os .seal{width:32px;height:32px}
-  .doc.os .wm{font-size:14px}
-  .doc.os .dash{font-size:12px}
-  .doc.os .oticnome{font-size:14px}
-  .doc.os .num{font-size:16px}
-  .doc.os .dt{font-size:8px}
-  .doc.os .rsub{font-size:8.5px}
-  .doc.os .idline{font-size:9px}
-  .doc.os .cliente{font-size:12px}
-  .doc.os .codebox{width:1.7cm;height:1.7cm;font-size:6px}
+  .doc.os .head{flex-wrap:wrap;gap:4px 10px}
+  .doc.os .seal{width:44px;height:44px}
+  .doc.os .wm{font-size:26px;letter-spacing:.08em}
+  .doc.os .dash{font-size:22px}
+  .doc.os .oticnome{font-size:26px}
+  .doc.os .tag{font-size:8px}
+  .doc.os .dt{font-size:10px}
+  .doc.os .num{font-size:32px}
+  .doc.os .rsub{font-size:9px}
+  .doc.os .idline{font-size:9.5px}
+  .doc.os .cliente{font-size:13px}
+  .doc.os .codebox{width:1.6cm;height:1.6cm;font-size:6px}
   .doc.os .rxp thead th{font-size:8px}
   .doc.os .rxp tbody th{font-size:11px;width:1.2cm}
   .doc.os .rxp tbody td{font-size:14px;font-weight:800}
-  .doc.os .medbox{border:2px solid #000;padding:5px 8px;margin-top:8px;background:#f3f3f3}
-  .doc.os .medttl{font-size:8px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:3px}
-  .doc.os .malert{background:#000;color:#fff;padding:1px 6px;font-size:7.5px;letter-spacing:.06em;font-weight:700;margin-left:5px}
-  .doc.os .medvals{font-size:12px}
-  .doc.os .medvals b{font-family:var(--mono);font-weight:800;font-size:13px}
-  .doc.os .medvals .mk{font-weight:700;text-transform:uppercase;font-size:8px;letter-spacing:.08em;margin-right:3px}
-  .doc.os .tratline{margin-top:7px}
+  .doc.os .rxp th,.doc.os .rxp td{padding:4px 4px}
+  /* centragem + lente/armação lado a lado */
+  .doc.os .grid2{display:flex;gap:8px;margin-top:9px;align-items:stretch}
+  .doc.os .grid2>*{flex:1}
+  .doc.os .ctab,.doc.os .ptab{width:100%;border-collapse:collapse;height:100%}
+  .doc.os .ctab th,.doc.os .ctab td,.doc.os .ptab th,.doc.os .ptab td{border:1.5px solid #000}
+  .doc.os .ctab thead th{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;background:#e6e6e6;padding:3px 4px}
+  .doc.os .ctab tbody th{font-family:var(--mono);font-weight:700;font-size:11px;background:#f4f4f4;text-align:center;width:.95cm;padding:4px 2px}
+  .doc.os .ctab tbody td{font-family:var(--mono);font-weight:800;font-size:15px;text-align:center;padding:4px 4px}
+  .doc.os .ptab th{text-align:left;font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;background:#f4f4f4;width:1.9cm;font-weight:700;padding:4px 6px}
+  .doc.os .ptab td{font-size:11px;font-weight:600;padding:4px 6px}
+  /* tratamentos */
+  .doc.os .tratline{margin-top:8px}
   .doc.os .trats{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
   .doc.os .trt{display:inline-flex;align-items:center;gap:4px;border:1.5px solid #000;padding:2px 7px 2px 4px;font-size:10px;font-weight:700}
   .doc.os .trt .box{display:inline-flex;align-items:center;justify-content:center;width:12px;height:12px;border:1.5px solid #000;font-size:10px;line-height:1;font-weight:900}
-  .doc.os .rxp th,.doc.os .rxp td{padding:4px 4px}
-  .doc.os .med{font-size:10px}
-  .doc.os .med .mv{font-size:11px}
-  .doc.os .prod{font-size:10.5px}
-  .doc.os .prod .k{font-size:9.5px}
-  .doc.os .labh{font-size:7.5px}
-  .doc.os .ck{font-size:7.5px}
+  /* observações */
+  .doc.os .obsbox{border:1.5px solid #000;margin-top:8px;padding:4px 8px 6px}
+  .doc.os .obstext{font-size:10px;margin-top:2px;min-height:.85cm;white-space:pre-wrap}
+  /* uso do laboratório — faixa compacta de 3 campos */
+  .doc.os .lab3{border:1.5px solid #000;margin-top:8px}
+  .doc.os .lab3 .labh{font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;background:#000;color:#fff;padding:3px 7px;font-weight:700}
+  .doc.os .lab3row{display:grid;grid-template-columns:1fr 1fr 1fr}
+  .doc.os .lab3 .lc{padding:5px 8px 4px;border-left:1px solid #000}
+  .doc.os .lab3 .lc:first-child{border-left:none}
+  .doc.os .lab3 .ck{font-size:7.5px;letter-spacing:.06em;text-transform:uppercase;color:#000;font-weight:700}
+  .doc.os .lab3 .cline{border-bottom:1px solid #999;height:12px;margin-top:5px}
+  .doc.os .lbl{font-size:8px}
   .doc.os .consent{font-size:8px;max-width:7cm}
   .doc.os .sign{width:5cm}
-  .doc.os .sign .sl{font-size:7.5px;margin-top:22px}
+  .doc.os .sign .sl{font-size:7.5px;margin-top:20px}
   .doc.os .genby{font-size:6.5px}
   .doc.os .foldnote{position:absolute;top:50%;right:-.5cm;transform:rotate(90deg);transform-origin:center;
     font-size:6px;letter-spacing:.2em;text-transform:uppercase;color:#aaa;white-space:nowrap}
@@ -829,21 +842,29 @@ function printOrdem(id,mode){const o=S.ordens.find(x=>x.id===id);if(!o)return;co
       <div class="genby">documento gerado por Órbita</div></div>`;
   }else{
     const multi=/multifocal|bifocal|progress/i.test(o.produto.tipo||"")||!!sgBR(o.receita.od.ad)||!!sgBR(o.receita.oe.ad);
-    const med=`<div class="medbox"><div class="medttl">Centragem${multi?'<span class="malert">Multifocal — conferir altura</span>':''}</div>
-        <div class="medvals"><span class="mk">DNP</span> <b>OD ${mmBR(o.medidas.dnpOD)} · OE ${mmBR(o.medidas.dnpOE)} mm</b> &nbsp;&nbsp; <span class="mk">Altura</span> <b>OD ${mmBR(o.medidas.altOD)} · OE ${mmBR(o.medidas.altOE)} mm</b></div></div>`;
+    const centragem=`<table class="ctab"><thead><tr><th colspan="2">DNP</th><th colspan="2">Altura</th></tr></thead>
+        <tbody>
+          <tr><th>OD</th><td>${mmBR(o.medidas.dnpOD)}</td><th>OD</th><td>${mmBR(o.medidas.altOD)}</td></tr>
+          <tr><th>OE</th><td>${mmBR(o.medidas.dnpOE)}</td><th>OE</th><td>${mmBR(o.medidas.altOE)}</td></tr>
+        </tbody></table>`;
+    const lentetab=`<table class="ptab"><tbody>
+          <tr><th>Lente</th><td>${tipo}${multi?' <b>· conferir altura</b>':''}</td></tr>
+          <tr><th>Índice</th><td>${esc(o.produto.indice||"—")}</td></tr>
+          <tr><th>Armação</th><td>${esc(o.produto.armacao||"—")}</td></tr>
+        </tbody></table>`;
     const tratArr=(o.produto.tratam&&o.produto.tratam.length)?o.produto.tratam:[];
     const tratHTML=tratArr.length?tratArr.map(t=>`<span class="trt"><span class="box">\u2713</span>${esc(t)}</span>`).join(""):'<span style="color:#666">—</span>';
     html=`<div class="doc os">${headHTML(o,"Ordem de Serviço")}${idlineHTML()}
       <div class="headrow"><div><div class="lbl">Cliente</div><div class="cliente">${esc(c.nome)}</div></div>
         <div class="codebox">código (futuro)</div></div>
-      ${receita}${med}
-      <div class="sec"><div class="lbl">Produto</div><div class="prod"><span class="k">Armação:</span> ${esc(o.produto.armacao||"—")} &nbsp; <span class="k">Lente:</span> ${tipo} · ${esc(o.produto.indice||"—")}${o.produto.obs?'<br><span class="k">Obs.:</span> '+esc(o.produto.obs):""}</div>
-        <div class="tratline"><span class="lbl">Tratamentos</span><div class="trats">${tratHTML}</div></div></div>
-      <div class="lab"><div class="labh">Uso do laboratório</div><div class="labg">
-        <div class="lcell"><div class="ck">Controle interno</div><div class="cline"></div></div>
-        <div class="lcell"><div class="ck">Recebido em</div><div class="cline"></div></div>
-        <div class="lcell"><div class="ck">Previsão de entrega</div><div class="cline"></div></div>
-        <div class="lcell"><div class="ck">Observações</div><div class="cline"></div></div></div></div>
+      ${receita}
+      <div class="grid2">${centragem}${lentetab}</div>
+      <div class="tratline"><span class="lbl">Tratamentos</span><div class="trats">${tratHTML}</div></div>
+      <div class="obsbox"><span class="lbl">Observações</span><div class="obstext">${esc(o.produto.obs||"")}</div></div>
+      <div class="lab3"><div class="labh">Uso do laboratório</div><div class="lab3row">
+        <div class="lc"><div class="ck">Controle interno</div><div class="cline"></div></div>
+        <div class="lc"><div class="ck">Recebido em</div><div class="cline"></div></div>
+        <div class="lc"><div class="ck">Previsão de entrega</div><div class="cline"></div></div></div></div>
       <div class="foot"><div class="consent">Status: ${status}. Consentimento LGPD do titular registrado em ${brDate(o.data)} — tratamento restrito à confecção e ao histórico.</div>
         <div class="sign"><div class="sl">Assinatura / carimbo do laboratório</div></div></div>
       <div class="genby">documento gerado por Órbita</div><div class="foldnote">corte ou dobre aqui</div></div>`;
