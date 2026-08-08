@@ -294,15 +294,15 @@
   @media print{ .app,.savebar,.nav,#toast,#login{display:none!important} #printDoc{display:block} }
   /* OS = meia folha paisagem (A5), com linha de dobra/corte à direita */
   .doc.os{width:14.3cm;min-height:19cm;border-right:1px dashed #999;padding-right:.5cm;position:relative}
-  .doc.os .head{flex-wrap:wrap;gap:4px 10px}
-  .doc.os .seal{width:44px;height:44px}
-  .doc.os .wm{font-size:26px;letter-spacing:.08em}
-  .doc.os .dash{font-size:22px}
-  .doc.os .oticnome{font-size:26px}
-  .doc.os .tag{font-size:8px}
-  .doc.os .dt{font-size:10px}
-  .doc.os .num{font-size:32px}
-  .doc.os .rsub{font-size:9px}
+  .doc.os .head{flex-wrap:nowrap;gap:4px 10px}
+  .doc.os .seal{width:38px;height:38px}
+  .doc.os .wm{font-size:19px;letter-spacing:.08em}
+  .doc.os .dash{font-size:16px}
+  .doc.os .oticnome{font-size:19px}
+  .doc.os .tag{font-size:7.5px}
+  .doc.os .dt{font-size:9px}
+  .doc.os .num{font-size:28px}
+  .doc.os .rsub{font-size:8.5px}
   .doc.os .idline{font-size:9.5px}
   .doc.os .cliente{font-size:13px}
   .doc.os .codebox{width:1.6cm;height:1.6cm;font-size:6px}
@@ -786,10 +786,10 @@ function drawFerr(){document.getElementById("view").innerHTML=`<div class="ptitl
 /* ajustes */
 function drawCfg(){document.getElementById("view").innerHTML=`<div class="ptitle"><h1>Ajustes</h1><span class="meta">MEI</span></div>
   <div class="card"><div class="shead"><span class="n">01</span><span class="bar"></span><h2>Consultor (MEI)</h2></div>
-    <p class="hint">Aparecem na OS como identificação formal. O cliente do laboratório é você.</p>
-    <div class="fgrid f2"><label class="field"><span class="flab">Nome / razão</span><input id="c_nome" value="${esc(S.config.nome)}"></label>
-      <label class="field"><span class="flab">CNPJ</span><input id="c_cnpj" value="${esc(S.config.cnpj)}" placeholder="00.000.000/0001-00"></label></div>
-    <label class="field" style="margin-top:11px"><span class="flab">Telefone / WhatsApp</span><input id="c_contato" type="tel" value="${esc(S.config.contato)}" placeholder="(85) 9 0000-0000"></label></div>
+    <p class="hint">Estes são <b>seus</b> dados (a ótica/consultor emitente). Aparecem no cabeçalho da OS. Não confundir com o contato do cliente, que fica no atendimento.</p>
+    <div class="fgrid f2"><label class="field"><span class="flab">Nome / razão da ótica</span><input id="c_nome" value="${esc(S.config.nome)}"></label>
+      <label class="field"><span class="flab">CNPJ do emitente</span><input id="c_cnpj" value="${esc(S.config.cnpj)}" placeholder="00.000.000/0001-00"></label></div>
+    <label class="field" style="margin-top:11px"><span class="flab">Telefone / WhatsApp do emitente</span><input id="c_contato" type="tel" value="${esc(S.config.contato)}" placeholder="(85) 9 0000-0000"></label></div>
   <div class="card"><div class="shead"><span class="n">02</span><span class="bar"></span><h2>Numeração</h2></div>
     <p class="hint">Sua contagem pessoal. A próxima OS será a #${S.counters.local}.</p>
     <label class="field" style="max-width:200px"><span class="flab">Próxima OS (#)</span><input id="c_local" value="${S.counters.local}" inputmode="numeric"></label>
